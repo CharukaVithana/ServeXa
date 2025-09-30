@@ -14,7 +14,7 @@ const Landing = () => {
       {/* Hero Section */}
       <div className="flex items-center justify-start px-16 py-24 min-h-[60vh] mt-10">
         <div className="w-full md:w-1/3 max-w-xl">
-          <h1 className="text-5xl font-bold mb-6 text-black drop-shadow-lg text-left leading-tight">Fast, Reliable Car Service at Your Fingertips</h1>
+          <h1 className="text-5xl font-bold mb-6 text-white drop-shadow-lg text-left leading-tight">Fast, Reliable Car Service at Your Fingertips</h1>
           <p className="text-xl text-black
            mb-10 drop-shadow-lg text-left">Book appointments, track your vehicle service, and receive real-time updates</p>
           <div className="flex gap-4">

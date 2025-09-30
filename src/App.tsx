@@ -1,11 +1,11 @@
 
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Login from '../Authentication/Login';
-import Signup from '../Authentication/SignUp';
-import ResetPasswordRequest from '../Authentication/ResetPasswordRequest';
-import ResetPasswordNew from '../Authentication/ResetPasswordNew';
-import Landing from './pages/Landing/landing';
+import Login from './pages/Authentication/Login';
+import Signup from './pages/Authentication/SignUp';
+import ResetPasswordRequest from './pages/Authentication/ResetPasswordRequest';
+import ResetPasswordNew from './pages/Authentication/ResetPasswordNew';
+import Landing from './pages/Landing/Landing';
 
 function App() {
   return (
