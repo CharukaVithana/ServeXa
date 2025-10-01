@@ -56,10 +56,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
       const response = await authService.login(credentials);
       
-      authService.setStoredToken(response.token);
+      authService.setStoredToken(response.accessToken);
       
       setState({
-        user: response.user,
+        user: {
+          id: response.userId,
+          email: response.email,
+          fullName: response.fullName,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
         isAuthenticated: true,
         isLoading: false,
         error: null,
@@ -81,10 +87,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
       const response = await authService.signup(data);
       
-      authService.setStoredToken(response.token);
+      authService.setStoredToken(response.accessToken);
       
       setState({
-        user: response.user,
+        user: {
+          id: response.userId,
+          email: response.email,
+          fullName: response.fullName,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
         isAuthenticated: true,
         isLoading: false,
         error: null,
@@ -104,8 +116,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, isLoading: true }));
+      
+      // Logout will handle errors internally and always clear tokens
       await authService.logout();
-      authService.removeStoredToken();
       
       setState({
         user: null,
@@ -116,11 +129,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       navigate('/login');
     } catch (error) {
-      setState(prev => ({
-        ...prev,
+      // Even if logout fails, we still clear local state
+      setState({
+        user: null,
+        isAuthenticated: false,
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Logout failed',
-      }));
+        error: null,
+      });
+      navigate('/login');
     }
   }, [navigate]);
 
