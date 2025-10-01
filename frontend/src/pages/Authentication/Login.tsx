@@ -69,11 +69,13 @@ const Login = () => {
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <div>
               <input
-                type="text"
+                type="email"
                 name="email"
+                id="email"
                 value={values.email}
                 onChange={handleChange}
                 placeholder="Email Address"
+                autoComplete="email"
                 className={`border-b ${errors.email ? 'border-red-500' : 'border-gray-300'} focus:outline-none p-2 w-full`}
               />
               {errors.email && (
@@ -86,9 +88,11 @@ const Login = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
+                  id="current-password"
                   value={values.password}
                   onChange={handleChange}
                   placeholder="Password"
+                  autoComplete="current-password"
                   className={`border-b ${errors.password ? 'border-red-500' : 'border-gray-300'} focus:outline-none p-2 w-full`}
                 />
                 <span

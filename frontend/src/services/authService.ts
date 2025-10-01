@@ -1,6 +1,6 @@
 import type { LoginCredentials, SignupData, AuthResponse, ResetPasswordData, User } from '../types/auth';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api';
 
 class AuthService {
   private async handleResponse<T>(response: Response): Promise<T> {
@@ -20,7 +20,9 @@ class AuthService {
       body: JSON.stringify(credentials),
       credentials: 'include',
     });
-    return this.handleResponse<AuthResponse>(response);
+    const data = await this.handleResponse<any>(response);
+    // Extract the actual response from the Spring Boot ApiResponse wrapper
+    return data.data || data;
   }
 
   async signup(data: SignupData): Promise<AuthResponse> {
@@ -32,15 +34,49 @@ class AuthService {
       body: JSON.stringify(data),
       credentials: 'include',
     });
-    return this.handleResponse<AuthResponse>(response);
+    const result = await this.handleResponse<any>(response);
+    // Extract the actual response from the Spring Boot ApiResponse wrapper
+    return result.data || result;
   }
 
   async logout(): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-    return this.handleResponse<void>(response);
+    try {
+      // Get the current user ID from stored token or context
+      const token = this.getStoredToken();
+      let userId = '';
+      
+      // Try to extract userId from token if available
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          userId = payload.userId || '';
+        } catch (e) {
+          // Invalid token format
+        }
+      }
+
+      const url = userId 
+        ? `${API_BASE_URL}/auth/logout?userId=${userId}`
+        : `${API_BASE_URL}/auth/logout`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+      });
+      
+      if (!response.ok) {
+        console.warn('Logout request failed, but continuing with local logout');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Continue with local logout even if API call fails
+    }
+    
+    // Always clear local storage
+    this.removeStoredToken();
   }
 
   async requestPasswordReset(email: string): Promise<{ message: string }> {
@@ -67,14 +103,19 @@ class AuthService {
 
   async getCurrentUser(): Promise<User | null> {
     try {
+      const token = this.getStoredToken();
       const response = await fetch(`${API_BASE_URL}/auth/me`, {
         method: 'GET',
         credentials: 'include',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
       });
       if (response.status === 401) {
         return null;
       }
-      return this.handleResponse<User>(response);
+      const data = await this.handleResponse<any>(response);
+      return data.data || null;
     } catch (error) {
       return null;
     }

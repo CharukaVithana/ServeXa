@@ -1,0 +1,143 @@
+{
+  "info": {
+    "name": "ServeXa Auth API Updated",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Signup",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password@123\",\n  \"phoneNumber\": \"+1234567890\",\n  \"role\": \"CUSTOMER\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/signup",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "signup"]
+        }
+      }
+    },
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set(\"access_token\", response.data.accessToken);",
+              "    pm.environment.set(\"refresh_token\", response.data.refreshToken);",
+              "    pm.environment.set(\"user_id\", response.data.userId);",
+              "    console.log('Tokens saved to environment');",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password@123\",\n  \"rememberMe\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/login",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "Refresh Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.environment.set(\"access_token\", response.data.accessToken);",
+              "    pm.environment.set(\"refresh_token\", response.data.refreshToken);",
+              "    console.log('New tokens saved to environment');",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/refresh",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "refresh"]
+        }
+      }
+    },
+    {
+      "name": "Validate Token",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/api/auth/validate?token={{access_token}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "validate"],
+          "query": [
+            {
+              "key": "token",
+              "value": "{{access_token}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Logout",
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "{{base_url}}/api/auth/logout?userId={{user_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "auth", "logout"],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{user_id}}"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8081",
+      "type": "default"
+    }
+  ]
+}

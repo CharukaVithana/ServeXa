@@ -25,9 +25,13 @@ export interface ResetPasswordData {
 }
 
 export interface AuthResponse {
-  user: User;
-  token: string;
-  message: string;
+  userId: string;
+  email: string;
+  fullName: string;
+  role: 'CUSTOMER' | 'EMPLOYEE' | 'ADMIN';
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
 }
 
 export interface AuthState {
