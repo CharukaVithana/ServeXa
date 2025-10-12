@@ -2,7 +2,7 @@ export const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/;
 
 export interface ValidationRule {
-  validate: (value: any) => boolean;
+  validate: (value: any, allValues?: any) => boolean;
   message: string;
 }
 
@@ -52,15 +52,17 @@ export function validateField(value: any, rules: ValidationRule[], allValues?: a
 
 export function validateForm<T extends Record<string, any>>(
   values: T,
-  rulesMap: Record<keyof T, ValidationRule[]>
+  rulesMap: Partial<Record<keyof T, ValidationRule[]>>
 ): Partial<T> {
   const errors: Partial<T> = {};
   
   for (const field in rulesMap) {
     const rules = rulesMap[field];
-    const error = validateField(values[field], rules, values);
-    if (error) {
-      (errors as any)[field] = error;
+    if (rules) {
+      const error = validateField(values[field], rules, values);
+      if (error) {
+        (errors as any)[field] = error;
+      }
     }
   }
   
