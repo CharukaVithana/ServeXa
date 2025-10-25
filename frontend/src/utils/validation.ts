@@ -39,6 +39,14 @@ export const validationRules = {
     validate: (value: any, allValues: any) => value === allValues[fieldToMatch],
     message: `Must match ${fieldLabel}`,
   }),
+  phone: (message = 'Please enter a valid phone number'): ValidationRule => ({
+    validate: (value: string) => {
+       
+        if (!value) return true; 
+        return /^[+]?[0-9]{10,15}$/.test(value);
+    },
+    message,
+  }),
 };
 
 export function validateField(value: any, rules: ValidationRule[], allValues?: any): string | undefined {
@@ -95,6 +103,17 @@ export const authValidation = {
       validationRules.password(),
     ],
   },
+
+  profile: {
+      phoneNumber: [
+          validationRules.phone('Please enter a valid phone number (e.g., +1234567890)'),
+      ],
+
+      address: [
+          validationRules.minLength(10, 'Address must be at least 10 characters long'),
+      ],
+  
+  },
   
   resetPasswordRequest: {
     email: [
@@ -102,6 +121,7 @@ export const authValidation = {
       validationRules.email(),
     ],
   },
+  
   
   resetPassword: {
     newPassword: [
@@ -111,6 +131,20 @@ export const authValidation = {
     confirmPassword: [
       validationRules.required('Please confirm your password'),
       validationRules.match('newPassword', 'password'),
+    ],
+  },
+
+  vehicle: {
+    registrationNumber: [
+      validationRules.required('Registration number is required'),
+    ],
+    model: [
+      validationRules.required('Model is required'),
+    ],
+    year: [
+      validationRules.required('Year is required'),
+      validationRules.minLength(4, 'Enter a valid year'),
+      validationRules.maxLength(4, 'Enter a valid year'),
     ],
   },
 };
