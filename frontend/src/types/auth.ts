@@ -2,6 +2,10 @@ export interface User {
   id: string;
   email: string;
   fullName: string;
+  phoneNumber?: string;
+  address?: string;
+  profilePictureUrl?: string | null;
+  vehicles?: Vehicle[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -48,8 +52,21 @@ export interface AuthContextType extends AuthState {
   requestPasswordReset: (email: string) => Promise<void>;
   resetPassword: (data: ResetPasswordData) => Promise<void>;
   clearError: () => void;
+  updateUser: (data: Partial<User>) => void;
+  addVehicle: (vehicle: Omit<Vehicle, 'id'>) => void;
+  updateVehicle: (id: string, vehicleData: Omit<Vehicle, 'id'>) => void;
+  removeVehicle: (id: string) => void;
+  updateProfilePicture: (imageUrl: string | null) => void;
 }
 
 export type AuthFormErrors = {
   [key: string]: string | undefined;
 };
+export interface Vehicle {
+  id: string;
+  registrationNumber: string;
+  model: string;
+  year: string;
+  color?: string;
+  imageUrl?: string;
+}

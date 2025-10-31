@@ -15,7 +15,7 @@ interface UseFormReturn<T> {
   handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
   setFieldValue: (field: keyof T, value: any) => void;
   setErrors: (errors: Partial<T>) => void;
-  resetForm: () => void;
+  resetForm: (newValues?: T) => void;
 }
 
 export function useForm<T extends Record<string, any>>({
@@ -73,7 +73,7 @@ export function useForm<T extends Record<string, any>>({
     }
   }, [values, validate, onSubmit]);
 
-  const resetForm = useCallback(() => {
+  const resetForm = useCallback((newValues?: T) => {
     setValues(initialValues);
     setErrors({});
     setIsSubmitting(false);
