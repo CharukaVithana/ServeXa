@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { FaUser, FaCar, FaHistory, FaCalendarAlt, FaBell, FaCog, FaSignOutAlt, FaPencilAlt } from 'react-icons/fa';
 import { useAuth } from '../../hooks/useAuth';
+import ProfilePictureModal from '../../components/ProfilePictureModal';
 
 const CustomerProfile = () => {
-    const { user, logout } = useAuth();
+    const { user, logout, updateProfilePicture } = useAuth();
     const navigate = useNavigate();
+    const [isPictureModalOpen, setPictureModalOpen] = useState(false);
 
     const handleLogout = async () => {
         await logout();
@@ -20,24 +22,43 @@ const CustomerProfile = () => {
         { to: 'notifications', icon: <FaBell />, label: 'Notifications' },
     ];
 
+    const getAvatarUrl = () => {
+        if (user?.profilePictureUrl) {
+            return user.profilePictureUrl;
+        }
+        const name = user?.fullName?.replace(' ', '+') || 'User';
+        return `https://ui-avatars.com/api/?name=${name}&background=D72638&color=fff&rounded=true&size=80`;
+    };
+
     return (
-        <div className="min-h-screen bg-gray-100 p-4 sm:p-8 font-sans">
-            <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-lg">
+        <div className="min-h-screen  font-sans">
+            <div className=" mx-auto bg-white ">
                 {/* Header */}
                 <header className="p-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center">
                     <div className="flex items-center gap-4">
+
+                        <div 
+                           className="relative cursor-pointer group"
+                           onClick={() => setPictureModalOpen(true)}
+                           title="Click to change profile picture"
+                        >
                         <img
                             src={`https://ui-avatars.com/api/?name=${user?.fullName?.replace(' ', '+') || 'Alex+Johnson'}&background=D72638&color=fff&rounded=true&size=80`}
                             alt="User Avatar"
                             className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-red-500"
                         />
+
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 rounded-full flex items-center justify-center transition-opacity">
+                                <FaPencilAlt className="text-white opacity-0 group-hover:opacity-100" />
+                            </div>
+                            </div>
                         <div>
                             <h1 className="text-2xl font-bold text-gray-800">{user?.fullName || 'Alex Johnson'}</h1>
                             <p className="text-gray-600">{user?.email || 'alex.johnson@example.com'}</p>
                             <p className="text-gray-600">0552265435</p>
                         </div>
                     </div>
-                    <button className="bg-[#D72638] text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 flex items-center gap-2 mt-4 sm:mt-0">
+                    <button onClick={() => setPictureModalOpen(true)} className="bg-[#D72638] text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 flex items-center gap-2 mt-4 sm:mt-0">
                         <FaPencilAlt /> Edit Profile
                     </button>
                 </header>
@@ -79,6 +100,12 @@ const CustomerProfile = () => {
                     </button>
                 </footer>
             </div>
+            <ProfilePictureModal
+                isOpen={isPictureModalOpen}
+                onClose={() => setPictureModalOpen(false)}
+                onSave={updateProfilePicture}
+                currentImageUrl={user?.profilePictureUrl}
+            />
         </div>
     );
 };
