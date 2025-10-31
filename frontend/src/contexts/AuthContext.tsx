@@ -26,6 +26,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       email: 'alex.johnson@example.com',
       fullName: 'Alex Johnson',
       phoneNumber: '0552265435',
+      profilePictureUrl: null,
       address: '123 Main St, Anytown, USA 12345',
       vehicles: [ 
         { id: 'v1', registrationNumber: 'ABC-1234', model: '2020 Toyota Camry', year: '2020', imageUrl: '/car1.jpg' },
@@ -239,6 +240,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return { ...prevState, user: updatedUser };
     });
   }, []);
+  const updateProfilePicture = useCallback((imageUrl: string | null) => {
+    setState(prevState => {
+      if (!prevState.user) return prevState;
+      const updatedUser = { ...prevState.user, profilePictureUrl: imageUrl };
+      return { ...prevState, user: updatedUser };
+    });
+   
+    console.log("Updated profile picture URL:", imageUrl);
+  }, []);
 
   const value: AuthContextType = {
     ...state,
@@ -252,6 +262,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     addVehicle,
     updateVehicle,
     removeVehicle,
+    updateProfilePicture,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

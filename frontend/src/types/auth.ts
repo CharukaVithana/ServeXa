@@ -4,6 +4,7 @@ export interface User {
   fullName: string;
   phoneNumber?: string;
   address?: string;
+  profilePictureUrl?: string | null;
   vehicles?: Vehicle[];
   createdAt: Date;
   updatedAt: Date;
@@ -55,6 +56,7 @@ export interface AuthContextType extends AuthState {
   addVehicle: (vehicle: Omit<Vehicle, 'id'>) => void;
   updateVehicle: (id: string, vehicleData: Omit<Vehicle, 'id'>) => void;
   removeVehicle: (id: string) => void;
+  updateProfilePicture: (imageUrl: string | null) => void;
 }
 
 export type AuthFormErrors = {
