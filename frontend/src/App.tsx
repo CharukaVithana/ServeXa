@@ -9,6 +9,8 @@ import ResetPasswordNew from './pages/Authentication/ResetPasswordNew';
 import Landing from './pages/Landing/Landing';
 import Dashboard from './pages/Dashboard/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import CustomerDashboard from './pages/Customer/CustomerDashboard';
+import ChatSupport from './pages/Customer/ChatSupport';
 
 function App() {
   return (
@@ -20,6 +22,9 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/reset-password" element={<ResetPasswordRequest />} />
           <Route path="/reset-password/new" element={<ResetPasswordNew />} />
+          <Route path="/cus-dashboard" element={<CustomerDashboard />}/>
+          <Route path="/customer/chat-support" element={<ChatSupport />} />
+
           <Route
             path="/dashboard"
             element={

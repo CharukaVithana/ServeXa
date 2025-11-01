@@ -1,10 +1,13 @@
 export interface User {
   id: string;
   email: string;
+  role: "customer" | "employee" | "admin";
   fullName: string;
+  phone?: string; // ✅ add this line
   createdAt: Date;
   updatedAt: Date;
 }
+
 
 export interface LoginCredentials {
   email: string;
