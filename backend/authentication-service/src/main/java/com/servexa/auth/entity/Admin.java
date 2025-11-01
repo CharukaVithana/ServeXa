@@ -9,7 +9,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import jakarta.persistence.column;
+import jakarta.persistence.Lob;
 
 @Entity
 @Table(name="admins")
@@ -26,6 +26,7 @@ public class Admin {
     private String phoneNumber;
 
     @Column(name = "profile_image", columnDefinition = "bytea")
+    @Lob
 private byte[] profileImage;
 
   public Long getId() { return id; }
@@ -40,7 +41,13 @@ private byte[] profileImage;
     public String getPhoneNumber() { return phoneNumber; }
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
 
-    public byte[] getProfileImage() { return profileImage; }
-    public void setProfileImage(byte[] profileImage) { this.profileImage = profileImage; }
+ public byte[] getProfileImage() {
+    return profileImage;
+}
+
+public void setProfileImage(byte[] profileImage) {
+    this.profileImage = profileImage;
+}
+
 
 }

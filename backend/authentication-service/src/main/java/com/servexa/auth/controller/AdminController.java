@@ -38,13 +38,17 @@ public class AdminController {
     }
 
 @PostMapping(value = "/{id}/upload", consumes = {"multipart/form-data"})
-public ResponseEntity<Admin> uploadProfile(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
+public ResponseEntity<Admin> uploadProfile(
+        @PathVariable("id") Long id,
+        @RequestParam("file") MultipartFile file
+) throws IOException {
     Admin updatedAdmin = adminService.updateProfileImage(id, file);
     if (updatedAdmin != null) {
         return ResponseEntity.ok(updatedAdmin);
     }
     return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 }
+
 
 @PatchMapping("/{id}")
 public ResponseEntity<?> updateAdminPartial(
