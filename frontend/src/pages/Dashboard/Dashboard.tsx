@@ -29,7 +29,6 @@ const Dashboard = () => {
               <p><span className="font-medium">Email:</span> {user?.email}</p>
             </div>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
             <div className="bg-blue-100 p-4 rounded-lg">
               <h3 className="font-semibold text-blue-900">Book Service</h3>
