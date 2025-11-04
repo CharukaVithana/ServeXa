@@ -133,57 +133,6 @@ const Signup = () => {
               )}
             </div>
 
-            <div>
-              <label htmlFor="role" className="sr-only">
-                Role
-              </label>
-              <select
-                name="role"
-                id="role"
-                value={values.role}
-                onChange={(e) =>
-                  handleChange(
-                    e as unknown as React.ChangeEvent<HTMLInputElement>
-                  )
-                }
-                className={`border-b ${
-                  errors.role ? "border-red-500" : "border-gray-300"
-                } focus:outline-none p-2 w-full bg-white ${
-                  values.role ? "text-gray-900" : "text-gray-400"
-                }`}
-              >
-                <option value="">Select a role</option>
-                <option value="CUSTOMER">Customer</option>
-                <option value="EMPLOYEE">Employee</option>
-                <option value="ADMIN">Admin</option>
-              </select>
-              {errors.role && (
-                <p className="text-red-500 text-sm mt-1">{errors.role}</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="phoneNumber" className="sr-only">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                name="phoneNumber"
-                id="phoneNumber"
-                value={values.phoneNumber}
-                onChange={handleChange}
-                placeholder="Phone Number"
-                autoComplete="tel"
-                className={`border-b ${
-                  errors.phoneNumber ? "border-red-500" : "border-gray-300"
-                } focus:outline-none p-2 w-full`}
-              />
-              {errors.phoneNumber && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.phoneNumber}
-                </p>
-              )}
-            </div>
 
             <div>
               <label htmlFor="password" className="sr-only">
