@@ -64,7 +64,7 @@ const PendingTasks: React.FC = () => {
       vehicleModel: 'Ford F-150 2023',
       serviceType: 'Transmission Service',
       dueTime: '3:30 PM',
-      estimatedDuration: '2h',
+      estimatedDuration: '120m',
       isUrgent: false
     },
     {
@@ -74,7 +74,7 @@ const PendingTasks: React.FC = () => {
       vehicleModel: 'BMW 3 Series 2020',
       serviceType: 'Full Service',
       dueTime: '4:00 PM',
-      estimatedDuration: '1.5h',
+      estimatedDuration: '90m',
       isUrgent: true
     }
   ];

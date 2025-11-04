@@ -30,8 +30,8 @@ const CurrentTasks: React.FC = () => {
       },
       serviceType: 'Oil Change',
       status: 'In Progress',
-      timeSpend: '1h 15m',
-      timeLogged: '1h 15m',
+      timeSpend: '75m',
+      timeLogged: '75m',
       deadline: '11:30 AM'
     },
     {
@@ -57,8 +57,6 @@ const CurrentTasks: React.FC = () => {
     time: '1:15:32',
     isRunning: true
   });
-  const [progress, setProgress] = useState(65);
-  const [updateNote, setUpdateNote] = useState('');
 
   useEffect(() => {
     let interval: number;
@@ -80,11 +78,6 @@ const CurrentTasks: React.FC = () => {
 
   const handleMarkAsCompleted = () => {
     console.log('Mark as completed');
-  };
-
-  const handleSendUpdate = () => {
-    console.log('Send update:', updateNote);
-    setUpdateNote('');
   };
 
   const filteredJobs = serviceJobs.filter(job =>
@@ -213,8 +206,8 @@ const CurrentTasks: React.FC = () => {
           <h3 className="text-lg font-semibold text-gray-900 mb-1">Current task name</h3>
         </div>
 
-        {/* Time Tracking and Quick Update Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Time Tracking Section */}
+        <div className="max-w-md mx-auto">
           {/* Time Tracking Card */}
           <div className="bg-white rounded-xl shadow-md p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Time Tracking</h3>
@@ -245,50 +238,6 @@ const CurrentTasks: React.FC = () => {
               className="w-full px-4 py-2.5 bg-pink-200 hover:bg-pink-300 text-gray-800 rounded-lg transition-all font-medium"
             >
               Mark As Completed
-            </button>
-          </div>
-
-          {/* Quick Update Card */}
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Quick Update</h3>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Progress %</label>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={progress}
-                onChange={(e) => setProgress(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-              />
-              <div className="text-right text-sm text-gray-600 mt-1">{progress}%</div>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Update Note</label>
-              <textarea
-                value={updateNote}
-                onChange={(e) => setUpdateNote(e.target.value)}
-                placeholder="Enter update..."
-                rows={4}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500 focus:ring-opacity-20 transition-all resize-none"
-              />
-              <div className="text-right text-xs text-gray-500 mt-1">for</div>
-            </div>
-
-            <div className="mb-4">
-              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                <input type="checkbox" className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500" />
-                Attach Photo
-              </label>
-            </div>
-
-            <button 
-              onClick={handleSendUpdate}
-              className="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all font-semibold shadow-md"
-            >
-              Send Update
             </button>
           </div>
         </div>

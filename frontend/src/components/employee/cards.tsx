@@ -10,8 +10,7 @@ const StatusCards: React.FC = () => {
     { title: 'Appointed', count: 5 },
     { title: 'Completed', count: 12 },
     { title: 'In progress', count: 3 },
-    { title: 'Logged Today', count: 8 },
-    { title: 'Efficiency', count: 94 }
+    { title: 'Logged Today', count: 8 }
   ];
 
   return (

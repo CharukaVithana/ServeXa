@@ -37,7 +37,7 @@ const Completed: React.FC = () => {
             </div>
 
             <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-              <span className="text-sm text-gray-600">Duration: <span className="font-semibold">1.5 hours</span></span>
+              <span className="text-sm text-gray-600">Duration: <span className="font-semibold">90m</span></span>
               <button className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all text-sm font-medium">
                 View Details
               </button>
@@ -68,7 +68,7 @@ const Completed: React.FC = () => {
             </div>
 
             <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-              <span className="text-sm text-gray-600">Duration: <span className="font-semibold">2 hours</span></span>
+              <span className="text-sm text-gray-600">Duration: <span className="font-semibold">120m</span></span>
               <button className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all text-sm font-medium">
                 View Details
               </button>
