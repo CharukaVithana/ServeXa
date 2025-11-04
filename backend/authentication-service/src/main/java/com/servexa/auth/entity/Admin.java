@@ -9,7 +9,8 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import jakarta.persistence.column;
+import jakarta.persistence.Column;
+
 
 @Entity
 @Table(name="admins")
