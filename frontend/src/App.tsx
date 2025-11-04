@@ -15,8 +15,6 @@ import EmployeeLayout from './components/employee/EmployeeLayout';
 import CurrentTasks from './components/employee/CurrentTasks';
 import PendingTasks from './components/employee/PendingTasks';
 import Completed from './components/employee/Completed';
-import History from './components/employee/History';
-import MyStats from './components/employee/MyStats';
 
 function App() {
   return (
@@ -32,11 +30,9 @@ function App() {
           {/* Employee Dashboard with nested routes */}
           <Route path="/employee" element={<EmployeeLayout />}>
             <Route index element={<Navigate to="/employee/pending-tasks" replace />} />
-            <Route path="current-tasks" element={<CurrentTasks />} />
             <Route path="pending-tasks" element={<PendingTasks />} />
+            <Route path="current-tasks" element={<CurrentTasks />} />
             <Route path="completed" element={<Completed />} />
-            <Route path="history" element={<History />} />
-            <Route path="my-stats" element={<MyStats />} />
           </Route>
           
           {/* Protected Dashboard Route */}
