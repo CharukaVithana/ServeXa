@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ClipboardList, Clock, CheckCircle, History, BarChart3 } from 'lucide-react';
+import { ClipboardList, Clock, CheckCircle } from 'lucide-react';
 
 interface Tab {
   id: string;
@@ -16,18 +16,18 @@ const NavigationTabs: React.FC = () => {
 
   const tabs: Tab[] = [
     {
-      id: 'current-tasks',
-      label: 'Current Tasks',
+      id: 'pending-tasks',
+      label: 'Assigned Tasks',
       icon: <ClipboardList size={18} />,
       count: 2,
-      path: '/employee/current-tasks'
+      path: '/employee/pending-tasks'
     },
     {
-      id: 'pending-tasks',
-      label: 'Pending Tasks',
+      id: 'current-tasks',
+      label: 'Ongoing Tasks',
       icon: <Clock size={18} />,
       count: 2,
-      path: '/employee/pending-tasks'
+      path: '/employee/current-tasks'
     },
     {
       id: 'completed',
@@ -35,18 +35,6 @@ const NavigationTabs: React.FC = () => {
       icon: <CheckCircle size={18} />,
       count: 3,
       path: '/employee/completed'
-    },
-    {
-      id: 'history',
-      label: 'History',
-      icon: <History size={18} />,
-      path: '/employee/history'
-    },
-    {
-      id: 'my-stats',
-      label: 'My Stats',
-      icon: <BarChart3 size={18} />,
-      path: '/employee/my-stats'
     }
   ];
 

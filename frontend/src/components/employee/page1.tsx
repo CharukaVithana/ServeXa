@@ -50,7 +50,7 @@ const TasksList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   // API Configuration
-  const API_BASE_URL = 'https://api.servexa.com';
+  const API_BASE_URL = 'http://localhost:8080';
 
   // Fetch tasks from API
   useEffect(() => {
