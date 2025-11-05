@@ -81,9 +81,47 @@ const MyVehicles = () => {
                 </div>
             )}
 
-            <AddVehicleModal isOpen={isAddModalOpen} onClose={closeModals} onSave={addVehicle} />
-            <EditVehicleModal isOpen={isEditModalOpen} onClose={closeModals} onSave={updateVehicle} vehicle={selectedVehicle} />
-            <RemoveVehicleModal isOpen={isRemoveModalOpen} onClose={closeModals} onConfirm={removeVehicle} vehicle={selectedVehicle} />
+            <AddVehicleModal 
+                isOpen={isAddModalOpen} 
+                onClose={closeModals} 
+                onSave={async (vehicle) => {
+                    try {
+                        await addVehicle(vehicle);
+                        closeModals();
+                    } catch (error) {
+                        console.error('Error adding vehicle:', error);
+                        // You might want to show an error message to the user here
+                    }
+                }} 
+            />
+            <EditVehicleModal 
+                isOpen={isEditModalOpen} 
+                onClose={closeModals} 
+                onSave={async (id, vehicle) => {
+                    try {
+                        await updateVehicle(id, vehicle);
+                        closeModals();
+                    } catch (error) {
+                        console.error('Error updating vehicle:', error);
+                        // You might want to show an error message to the user here
+                    }
+                }} 
+                vehicle={selectedVehicle} 
+            />
+            <RemoveVehicleModal 
+                isOpen={isRemoveModalOpen} 
+                onClose={closeModals} 
+                onConfirm={async (id) => {
+                    try {
+                        await removeVehicle(id);
+                        closeModals();
+                    } catch (error) {
+                        console.error('Error removing vehicle:', error);
+                        // You might want to show an error message to the user here
+                    }
+                }} 
+                vehicle={selectedVehicle} 
+            />
         </div>
     );
 };

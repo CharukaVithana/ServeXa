@@ -2,6 +2,8 @@ import React, { createContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
+import vehicleService from '../services/vehicleService';
+import customerService from '../services/customerService';
 import type { AuthContextType, AuthState, LoginCredentials, SignupData, ResetPasswordData, User,Vehicle} from '../types/auth';
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,31 +21,46 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     error: null,
   });
 
+  // Helper function to get customer ID from user email
+  const getCustomerId = useCallback(async (userEmail: string, userId: string): Promise<number | null> => {
+    try {
+      // First try to get customer by email
+      const customerId = await customerService.getCustomerIdByEmail(userEmail);
+      if (customerId) {
+        return customerId;
+      }
+      
+      // Fallback: try to parse userId as number (if userId is the customer ID)
+      const parsedId = parseInt(userId);
+      if (!isNaN(parsedId)) {
+        return parsedId;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error getting customer ID:', error);
+      return null;
+    }
+  }, []);
+
+  // Fetch vehicles for a user
+  const fetchVehicles = useCallback(async (customerId: number) => {
+    try {
+      const vehicles = await vehicleService.getVehiclesByCustomerId(customerId);
+      setState(prevState => {
+        if (!prevState.user) return prevState;
+        return {
+          ...prevState,
+          user: { ...prevState.user, vehicles },
+        };
+      });
+    } catch (error) {
+      console.error('Error fetching vehicles:', error);
+      // Don't throw error, just log it - user can still use the app
+    }
+  }, []);
+
   useEffect(() => {
-   
-    const mockUser: User = {
-      id: 'mock-user-123',
-      email: 'alex.johnson@example.com',
-      fullName: 'Alex Johnson',
-      phoneNumber: '0552265435',
-      profilePictureUrl: null,
-      address: '123 Main St, Anytown, USA 12345',
-      vehicles: [ 
-        { id: 'v1', registrationNumber: 'ABC-1234', model: '2020 Toyota Camry', year: '2020', imageUrl: '/car1.jpg' },
-        { id: 'v2', registrationNumber: 'XYZ-5678', model: '2018 Honda Civic', year: '2018', imageUrl: '/car2.jpg' },
-      ],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    setState({
-      user: mockUser,
-      isAuthenticated: true,
-      isLoading: false,
-      error: null,
-    });
-
-  /*useEffect(() => {
     const initAuth = async () => {
       try {
         const user = await authService.getCurrentUser();
@@ -54,6 +71,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             isLoading: false,
             error: null,
           });
+          
+          // Fetch vehicles for the user
+          // Note: We need customerId - for now we'll try to get it from user.id
+          // In production, you should have a proper mapping
+          const customerId = await getCustomerId(user.email, user.id);
+          if (customerId) {
+            await fetchVehicles(customerId);
+          }
         } else {
           setState({
             user: null,
@@ -72,8 +97,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
 
-    initAuth();  */
-  }, []);
+    initAuth();
+  }, [getCustomerId, fetchVehicles]);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     try {
@@ -82,19 +107,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       authService.setStoredToken(response.accessToken);
       
+      const user: User = {
+        id: response.userId,
+        email: response.email,
+        fullName: response.fullName,
+        role: response.role.toLowerCase() as "customer" | "employee" | "admin",
+        vehicles: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      
       setState({
-       user: {
-  id: response.userId,
-  email: response.email,
-  fullName: response.fullName,
-  role: response.role.toLowerCase() as "customer" | "employee" | "admin",
-  createdAt: new Date(),
-  updatedAt: new Date(),
-},
+        user,
         isAuthenticated: true,
         isLoading: false,
         error: null,
       });
+      
+      // Fetch vehicles for the customer
+      if (user.role === 'customer') {
+        const customerId = await getCustomerId(user.email, user.id);
+        if (customerId) {
+          await fetchVehicles(customerId);
+        }
+      }
       
       navigate('/dashboard');
     } catch (error) {
@@ -105,7 +141,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }));
       throw error;
     }
-  }, [navigate]);
+  }, [navigate, getCustomerId, fetchVehicles]);
 
   const signup = useCallback(async (data: SignupData) => {
     try {
@@ -208,41 +244,81 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       user: prevState.user ? { ...prevState.user, ...data } : null,
     }));
   }, []);
-  const addVehicle = useCallback((vehicleData: Omit<Vehicle, 'id'>) => {
-    setState(prevState => {
-      if (!prevState.user) return prevState;
-      const newVehicle: Vehicle = {
-        ...vehicleData,
-        id: `v${Date.now()}`, // Create a simple unique ID
-      };
-      const updatedVehicles = [...(prevState.user.vehicles || []), newVehicle];
-      const updatedUser = { ...prevState.user, vehicles: updatedVehicles };
-      return { ...prevState, user: updatedUser };
-    });
-  }, []);
-  const updateVehicle = useCallback((id: string, vehicleData: Omit<Vehicle, 'id'>) => {
-    setState(prevState => {
-      if (!prevState.user || !prevState.user.vehicles) return prevState;
-      
-      const updatedVehicles = prevState.user.vehicles.map(v => 
-        v.id === id ? { ...v, ...vehicleData } : v
-      );
-      
-      const updatedUser = { ...prevState.user, vehicles: updatedVehicles };
-      return { ...prevState, user: updatedUser };
-    });
-  }, []);
+  const addVehicle = useCallback(async (vehicleData: Omit<Vehicle, 'id'>) => {
+    if (!state.user) {
+      throw new Error('User not authenticated');
+    }
 
-  const removeVehicle = useCallback((id: string) => {
-    setState(prevState => {
-      if (!prevState.user || !prevState.user.vehicles) return prevState;
+    try {
+      const customerId = await getCustomerId(state.user.email, state.user.id);
+      if (!customerId) {
+        throw new Error('Unable to determine customer ID');
+      }
+
+      const newVehicle = await vehicleService.addVehicle(vehicleData, customerId);
       
-      const updatedVehicles = prevState.user.vehicles.filter(v => v.id !== id);
+      setState(prevState => {
+        if (!prevState.user) return prevState;
+        const updatedVehicles = [...(prevState.user.vehicles || []), newVehicle];
+        const updatedUser = { ...prevState.user, vehicles: updatedVehicles };
+        return { ...prevState, user: updatedUser };
+      });
+    } catch (error) {
+      console.error('Error adding vehicle:', error);
+      throw error;
+    }
+  }, [state.user, getCustomerId]);
+
+  const updateVehicle = useCallback(async (id: string, vehicleData: Omit<Vehicle, 'id'>) => {
+    if (!state.user) {
+      throw new Error('User not authenticated');
+    }
+
+    try {
+      const customerId = await getCustomerId(state.user.email, state.user.id);
+      if (!customerId) {
+        throw new Error('Unable to determine customer ID');
+      }
+
+      const updatedVehicle = await vehicleService.updateVehicle(id, vehicleData, customerId);
       
-      const updatedUser = { ...prevState.user, vehicles: updatedVehicles };
-      return { ...prevState, user: updatedUser };
-    });
-  }, []);
+      setState(prevState => {
+        if (!prevState.user || !prevState.user.vehicles) return prevState;
+        
+        const updatedVehicles = prevState.user.vehicles.map(v => 
+          v.id === id ? updatedVehicle : v
+        );
+        
+        const updatedUser = { ...prevState.user, vehicles: updatedVehicles };
+        return { ...prevState, user: updatedUser };
+      });
+    } catch (error) {
+      console.error('Error updating vehicle:', error);
+      throw error;
+    }
+  }, [state.user, getCustomerId]);
+
+  const removeVehicle = useCallback(async (id: string) => {
+    if (!state.user) {
+      throw new Error('User not authenticated');
+    }
+
+    try {
+      await vehicleService.deleteVehicle(id);
+      
+      setState(prevState => {
+        if (!prevState.user || !prevState.user.vehicles) return prevState;
+        
+        const updatedVehicles = prevState.user.vehicles.filter(v => v.id !== id);
+        
+        const updatedUser = { ...prevState.user, vehicles: updatedVehicles };
+        return { ...prevState, user: updatedUser };
+      });
+    } catch (error) {
+      console.error('Error removing vehicle:', error);
+      throw error;
+    }
+  }, [state.user]);
   const updateProfilePicture = useCallback((imageUrl: string | null) => {
     setState(prevState => {
       if (!prevState.user) return prevState;
