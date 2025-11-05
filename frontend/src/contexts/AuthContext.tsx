@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
-import type { AuthContextType, AuthState, LoginCredentials, SignupData, ResetPasswordData } from '../types/auth';
+import type { AuthContextType, AuthState, LoginCredentials, SignupData, ResetPasswordData, User,Vehicle} from '../types/auth';
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -20,6 +20,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   });
 
   useEffect(() => {
+   
+    const mockUser: User = {
+      id: 'mock-user-123',
+      email: 'alex.johnson@example.com',
+      fullName: 'Alex Johnson',
+      phoneNumber: '0552265435',
+      profilePictureUrl: null,
+      address: '123 Main St, Anytown, USA 12345',
+      vehicles: [ 
+        { id: 'v1', registrationNumber: 'ABC-1234', model: '2020 Toyota Camry', year: '2020', imageUrl: '/car1.jpg' },
+        { id: 'v2', registrationNumber: 'XYZ-5678', model: '2018 Honda Civic', year: '2018', imageUrl: '/car2.jpg' },
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    setState({
+      user: mockUser,
+      isAuthenticated: true,
+      isLoading: false,
+      error: null,
+    });
+
+  /*useEffect(() => {
     const initAuth = async () => {
       try {
         const user = await authService.getCurrentUser();
@@ -48,7 +72,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
 
-    initAuth();
+    initAuth();  */
   }, []);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
@@ -59,13 +83,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       authService.setStoredToken(response.accessToken);
       
       setState({
-        user: {
-          id: response.userId,
-          email: response.email,
-          fullName: response.fullName,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
+       user: {
+  id: response.userId,
+  email: response.email,
+  fullName: response.fullName,
+  role: response.role.toLowerCase() as "customer" | "employee" | "admin",
+  createdAt: new Date(),
+  updatedAt: new Date(),
+},
         isAuthenticated: true,
         isLoading: false,
         error: null,
@@ -90,13 +115,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       authService.setStoredToken(response.accessToken);
       
       setState({
-        user: {
-          id: response.userId,
-          email: response.email,
-          fullName: response.fullName,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
+       user: {
+  id: response.userId,
+  email: response.email,
+  fullName: response.fullName,
+  role: response.role.toLowerCase() as "customer" | "employee" | "admin",
+  createdAt: new Date(),
+  updatedAt: new Date(),
+},
+
         isAuthenticated: true,
         isLoading: false,
         error: null,
@@ -175,6 +202,56 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const clearError = useCallback(() => {
     setState(prev => ({ ...prev, error: null }));
   }, []);
+  const updateUser = useCallback((data: Partial<User>) => {
+    setState(prevState => ({
+      ...prevState,
+      user: prevState.user ? { ...prevState.user, ...data } : null,
+    }));
+  }, []);
+  const addVehicle = useCallback((vehicleData: Omit<Vehicle, 'id'>) => {
+    setState(prevState => {
+      if (!prevState.user) return prevState;
+      const newVehicle: Vehicle = {
+        ...vehicleData,
+        id: `v${Date.now()}`, // Create a simple unique ID
+      };
+      const updatedVehicles = [...(prevState.user.vehicles || []), newVehicle];
+      const updatedUser = { ...prevState.user, vehicles: updatedVehicles };
+      return { ...prevState, user: updatedUser };
+    });
+  }, []);
+  const updateVehicle = useCallback((id: string, vehicleData: Omit<Vehicle, 'id'>) => {
+    setState(prevState => {
+      if (!prevState.user || !prevState.user.vehicles) return prevState;
+      
+      const updatedVehicles = prevState.user.vehicles.map(v => 
+        v.id === id ? { ...v, ...vehicleData } : v
+      );
+      
+      const updatedUser = { ...prevState.user, vehicles: updatedVehicles };
+      return { ...prevState, user: updatedUser };
+    });
+  }, []);
+
+  const removeVehicle = useCallback((id: string) => {
+    setState(prevState => {
+      if (!prevState.user || !prevState.user.vehicles) return prevState;
+      
+      const updatedVehicles = prevState.user.vehicles.filter(v => v.id !== id);
+      
+      const updatedUser = { ...prevState.user, vehicles: updatedVehicles };
+      return { ...prevState, user: updatedUser };
+    });
+  }, []);
+  const updateProfilePicture = useCallback((imageUrl: string | null) => {
+    setState(prevState => {
+      if (!prevState.user) return prevState;
+      const updatedUser = { ...prevState.user, profilePictureUrl: imageUrl };
+      return { ...prevState, user: updatedUser };
+    });
+   
+    console.log("Updated profile picture URL:", imageUrl);
+  }, []);
 
   const value: AuthContextType = {
     ...state,
@@ -184,6 +261,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     requestPasswordReset,
     resetPassword,
     clearError,
+    updateUser,
+    addVehicle,
+    updateVehicle,
+    removeVehicle,
+    updateProfilePicture,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
