@@ -1,22 +1,24 @@
-
-
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import Login from './pages/Authentication/Login';
-import Signup from './pages/Authentication/SignUp';
-import ResetPasswordRequest from './pages/Authentication/ResetPasswordRequest';
-import ResetPasswordNew from './pages/Authentication/ResetPasswordNew';
-import Landing from './pages/Landing/Landing';
-import Dashboard from './pages/Dashboard/Dashboard';
-import ProtectedRoute from './components/ProtectedRoute';
-import CustomerDashboard from './pages/Customer/CustomerDashboard';
-import ChatSupport from './pages/Customer/ChatSupport';
-import CustomerProfile from './pages/Customer/CustomerProfile';
-import PersonalInfo from './pages/Customer/PersonalInfo';
-import MyVehicles from './pages/Customer/MyVehicles';
-import ServiceHistory from './pages/Customer/ServiceHistory';
-import Appointments from './pages/Customer/Appointments';
-import Notifications from './pages/Customer/Notifications';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
+import Login from "./pages/Authentication/Login";
+import Signup from "./pages/Authentication/SignUp";
+import ResetPasswordRequest from "./pages/Authentication/ResetPasswordRequest";
+import ResetPasswordNew from "./pages/Authentication/ResetPasswordNew";
+import Landing from "./pages/Landing/Landing";
+import Dashboard from "./pages/Dashboard/Dashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
+import CustomerDashboard from "./pages/Customer/CustomerDashboard";
+import ChatSupport from "./pages/Customer/ChatSupport";
+import CustomerContact from "./pages/Customer/Contact";
+import CustomerSetting from "./pages/Customer/Setting";
+import AllVehicles from "./pages/Customer/Allvehicle";
+import CustomerProfile from "./pages/Customer/CustomerProfile";
+import PersonalInfo from "./pages/Customer/PersonalInfo";
+import MyVehicles from "./pages/Customer/MyVehicles";
+import ServiceHistory from "./pages/Customer/ServiceHistory";
+import Appointments from "./pages/Customer/Appointments";
+import Notifications from "./pages/Customer/Notifications";
+import { Toaster } from "react-hot-toast";
 
 // Employee Dashboard Components
 import EmployeeLayout from './components/employee/EmployeeLayout';
@@ -28,6 +30,10 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        {/* ✅ Toaster must be inside Provider but outside Routes */}
+        <Toaster position="top-right" reverseOrder={false} />
+
+        {/* ✅ Routes should wrap all Route elements (not self-closed) */}
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
@@ -38,6 +44,10 @@ function App() {
           {/* Customer Dashboard Routes */}
           <Route path="/cus-dashboard" element={<CustomerDashboard />}/>
           <Route path="/customer/chat-support" element={<ChatSupport />} />
+          <Route path="/customer/contact" element={<CustomerContact />} />
+          <Route path="/customer/settings" element={<CustomerSetting />} />
+          <Route path="/customer/vehicles" element={<AllVehicles />} />
+            
 
           {/* Employee Dashboard with nested routes */}
           <Route path="/employee" element={<EmployeeLayout />}>
