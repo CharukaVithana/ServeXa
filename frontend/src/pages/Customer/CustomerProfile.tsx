@@ -32,10 +32,10 @@ const CustomerProfile = () => {
     };
 
     return (
-        <div className="min-h-screen font-sans flex bg-gray-50">
+        <div className="flex h-screen bg-gray-50 text-slate-800 overflow-hidden">
             <Sidebar />
 
-            <div className=" flex-1 overflow-y-auto bg-white ">
+            <div className="flex-1 h-full overflow-y-auto p-8 ml-64 transition-all duration-300">
                 {/* Header */}
                 <header className="p-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center">
                     <div className="flex items-center gap-4">
