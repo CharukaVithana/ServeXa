@@ -2,11 +2,25 @@ import type { LoginCredentials, SignupData, AuthResponse, ResetPasswordData, Use
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api';
 
+const CUSTOMER_API_BASE_URL = 'http://localhost:8082/api';
+
+function getAuthHeaders() {
+  const token = localStorage.getItem('authToken');
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
 class AuthService {
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'An error occurred' }));
       throw new Error(error.message || `HTTP error! status: ${response.status}`);
+    }
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      return response.json();
     }
     return response.json();
   }
@@ -21,11 +35,9 @@ class AuthService {
     });
 
     const result = await this.handleResponse<any>(response);
-
-    //Extract the actual user data inside the `data` wrapper
     const data = result.data;
 
-    //Store the access token locally for future API calls
+   
     if (data?.accessToken) {
       this.setStoredToken(data.accessToken);
     }
@@ -113,6 +125,7 @@ class AuthService {
   async getCurrentUser(): Promise<User | null> {
     try {
       const token = this.getStoredToken();
+      if (!token) return null;
       const response = await fetch(`${API_BASE_URL}/auth/me`, {
         method: 'GET',
         credentials: 'include',
@@ -128,6 +141,45 @@ class AuthService {
     } catch (error) {
       return null;
     }
+  }
+
+  async getCustomerProfile(id: string): Promise<Partial<User>> {
+    const response = await fetch(`${CUSTOMER_API_BASE_URL}/customers/profile?id=${id}`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    const customerData = await this.handleResponse<any>(response);
+
+    return {
+      ...customerData,
+      id: customerData.id.toString(), 
+      fullName: customerData.name,    
+      name: undefined,                
+    };
+  }
+  async updateCustomerProfile(customerData: Partial<User>): Promise<Partial<User>> {
+    
+    const payload = {
+      ...customerData,
+      name: customerData.fullName, 
+      fullName: undefined,       
+    };
+
+    const response = await fetch(`${CUSTOMER_API_BASE_URL}/customers/profile`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+
+    const updatedData = await this.handleResponse<any>(response);
+
+    return {
+      ...updatedData,
+      id: updatedData.id.toString(),
+      fullName: updatedData.name,
+      name: undefined,
+    };
   }
 
   async loginWithGoogle(): Promise<void> {
@@ -149,14 +201,6 @@ class AuthService {
   removeStoredToken(): void {
     localStorage.removeItem('authToken');
   }
-}
-
-function getAuthHeaders() {
-  const token = localStorage.getItem('authToken');
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
 }
 
 
