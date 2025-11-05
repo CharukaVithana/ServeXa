@@ -18,12 +18,21 @@ class AuthService {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(credentials),
-      credentials: 'include',
     });
-    const data = await this.handleResponse<any>(response);
-    // Extract the actual response from the Spring Boot ApiResponse wrapper
-    return data.data || data;
+
+    const result = await this.handleResponse<any>(response);
+
+    //Extract the actual user data inside the `data` wrapper
+    const data = result.data;
+
+    //Store the access token locally for future API calls
+    if (data?.accessToken) {
+      this.setStoredToken(data.accessToken);
+    }
+
+    return data;
   }
+
 
   async signup(data: SignupData): Promise<AuthResponse> {
     const response = await fetch(`${API_BASE_URL}/auth/signup`, {
@@ -141,5 +150,14 @@ class AuthService {
     localStorage.removeItem('authToken');
   }
 }
+
+function getAuthHeaders() {
+  const token = localStorage.getItem('authToken');
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
 
 export default new AuthService();
