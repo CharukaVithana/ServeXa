@@ -44,6 +44,10 @@ function App() {
           {/* Customer Dashboard Routes */}
           <Route path="/cus-dashboard" element={<CustomerDashboard />}/>
           <Route path="/customer/chat-support" element={<ChatSupport />} />
+          <Route path="/customer/contact" element={<CustomerContact />} />
+          <Route path="/customer/settings" element={<CustomerSetting />} />
+          <Route path="/customer/vehicles" element={<AllVehicles />} />
+            
 
           {/* Employee Dashboard with nested routes */}
           <Route path="/employee" element={<EmployeeLayout />}>
