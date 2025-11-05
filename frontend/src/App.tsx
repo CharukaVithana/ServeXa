@@ -35,12 +35,11 @@ function App() {
 
         {/* ✅ Routes should wrap all Route elements (not self-closed) */}
         <Routes>
-          <Route path="/landing" element={<Landing />} />
+          <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/reset-password" element={<ResetPasswordRequest />} />
           <Route path="/reset-password/new" element={<ResetPasswordNew />} />
-<<<<<<< HEAD
           
           {/* Customer Dashboard Routes */}
           <Route path="/cus-dashboard" element={<CustomerDashboard />}/>
@@ -55,17 +54,6 @@ function App() {
           </Route>
           
           {/* Protected Dashboard Route */}
-=======
-
-          {/* === Customer Pages === */}
-          <Route path="/" element={<CustomerDashboard />} />
-          <Route path="/customer/chat-support" element={<ChatSupport />} />
-          <Route path="/customer/contact" element={<CustomerContact />} />
-          <Route path="/customer/settings" element={<CustomerSetting />} />
-          <Route path="/customer/all-vehicles" element={<AllVehicles />} />
-
-          {/* === Protected Dashboard === */}
->>>>>>> Prabodha
           <Route
             path="/dashboard"
             element={
@@ -74,18 +62,12 @@ function App() {
               </ProtectedRoute>
             }
           />
-<<<<<<< HEAD
           
           {/* Customer Profile Routes */}
           <Route
             path="/profile"
             element={<CustomerProfile />}
           >
-=======
-
-          {/* === Profile Nested Routes === */}
-          <Route path="/profile" element={<CustomerProfile />}>
->>>>>>> Prabodha
             <Route index element={<Navigate to="personal-info" replace />} />
             <Route path="personal-info" element={<PersonalInfo />} />
             <Route path="my-vehicles" element={<MyVehicles />} />

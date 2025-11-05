@@ -25,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
 
   const menus = {
     customer: [
-      { name: "Dashboard", icon: LayoutDashboard, path: "/" },
+      { name: "Dashboard", icon: LayoutDashboard, path: "/cus-dashboard" },
       { name: "Appointment", icon: Calendar, path: "appointments" },
       { name: "Contact", icon: Phone, path: "/customer/contact" },
       { name: "Profile", icon: User, path: "/profile" },
