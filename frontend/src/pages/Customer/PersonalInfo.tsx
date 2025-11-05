@@ -76,8 +76,7 @@ const PersonalInfo = () => {
         }),
         onSubmit: async (formValues) => {
             console.log('Submitting updated info:', formValues);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            updateUser(formValues);
+            await updateUser(formValues);
             setIsEditing(false);
         },
     });

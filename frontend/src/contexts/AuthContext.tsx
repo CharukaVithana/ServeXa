@@ -19,42 +19,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     error: null,
   });
 
-  useEffect(() => {
    
-    const mockUser: User = {
-      id: 'mock-user-123',
-      email: 'alex.johnson@example.com',
-      fullName: 'Alex Johnson',
-      phoneNumber: '0552265435',
-      profilePictureUrl: null,
-      address: '123 Main St, Anytown, USA 12345',
-      vehicles: [ 
-        { id: 'v1', registrationNumber: 'ABC-1234', model: '2020 Toyota Camry', year: '2020', imageUrl: '/car1.jpg' },
-        { id: 'v2', registrationNumber: 'XYZ-5678', model: '2018 Honda Civic', year: '2018', imageUrl: '/car2.jpg' },
-      ],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    setState({
-      user: mockUser,
-      isAuthenticated: true,
-      isLoading: false,
-      error: null,
-    });
-
-  /*useEffect(() => {
+   
+useEffect(() => {
     const initAuth = async () => {
       try {
-        const user = await authService.getCurrentUser();
-        if (user) {
+       
+        const authUser = await authService.getCurrentUser();
+        
+        if (authUser) {
+         
+          const customerProfile = await authService.getCustomerProfile("1");
+
+         
+          const mergedUser: User = {
+            ...(customerProfile as User), 
+            ...authUser,                
+            id: authUser.id,           
+            fullName: customerProfile.fullName || authUser.fullName, 
+          };
+
           setState({
-            user,
+            user: mergedUser,
             isAuthenticated: true,
             isLoading: false,
             error: null,
           });
         } else {
+          authService.removeStoredToken();
           setState({
             user: null,
             isAuthenticated: false,
@@ -63,39 +55,50 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           });
         }
       } catch (error) {
+        authService.removeStoredToken();
         setState({
           user: null,
           isAuthenticated: false,
           isLoading: false,
-          error: null,
+          error: null, 
         });
       }
     };
 
-    initAuth();  */
+    initAuth();  
   }, []);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
+
+
       const response = await authService.login(credentials);
-      
-      authService.setStoredToken(response.accessToken);
-      
+
+      const authUser: User = {
+        id: response.userId,
+        email: response.email,
+        fullName: response.fullName,
+        role: response.role.toLowerCase() as "customer" | "employee" | "admin",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const customerProfile = await authService.getCustomerProfile("1");
+
+      const mergedUser: User = {
+        ...(customerProfile as User),
+        ...authUser,
+        id: authUser.id, // Auth ID is primary
+        fullName: customerProfile.fullName || authUser.fullName,
+      };
       setState({
-       user: {
-  id: response.userId,
-  email: response.email,
-  fullName: response.fullName,
-  role: response.role.toLowerCase() as "customer" | "employee" | "admin",
-  createdAt: new Date(),
-  updatedAt: new Date(),
-},
+        user: mergedUser,
         isAuthenticated: true,
         isLoading: false,
         error: null,
       });
-      
+
       navigate('/dashboard');
     } catch (error) {
       setState(prev => ({
@@ -106,6 +109,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       throw error;
     }
   }, [navigate]);
+      
+
 
   const signup = useCallback(async (data: SignupData) => {
     try {
@@ -144,7 +149,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setState(prev => ({ ...prev, isLoading: true }));
       
-      // Logout will handle errors internally and always clear tokens
+    
       await authService.logout();
       
       setState({
@@ -156,7 +161,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       navigate('/login');
     } catch (error) {
-      // Even if logout fails, we still clear local state
+     
       setState({
         user: null,
         isAuthenticated: false,
@@ -202,18 +207,40 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const clearError = useCallback(() => {
     setState(prev => ({ ...prev, error: null }));
   }, []);
-  const updateUser = useCallback((data: Partial<User>) => {
-    setState(prevState => ({
-      ...prevState,
-      user: prevState.user ? { ...prevState.user, ...data } : null,
-    }));
-  }, []);
+
+  const updateUser = useCallback(async (data: Partial<User>) => {
+    if (!state.user) return;
+    
+  
+    const customerPayload: Partial<User> = {
+      ...data,
+      id: "1", 
+    };
+
+    try {
+     
+      const updatedCustomer = await authService.updateCustomerProfile(customerPayload);
+
+      
+      setState(prevState => ({
+        ...prevState,
+        user: prevState.user ? { 
+          ...prevState.user,    
+          ...updatedCustomer,   
+          id: prevState.user.id, 
+        } : null,
+      }));
+    } catch (error) {
+      console.error("Failed to update user profile:", error);
+     ;
+    }
+  }, [state.user]);
   const addVehicle = useCallback((vehicleData: Omit<Vehicle, 'id'>) => {
     setState(prevState => {
       if (!prevState.user) return prevState;
       const newVehicle: Vehicle = {
         ...vehicleData,
-        id: `v${Date.now()}`, // Create a simple unique ID
+        id: `v${Date.now()}`,
       };
       const updatedVehicles = [...(prevState.user.vehicles || []), newVehicle];
       const updatedUser = { ...prevState.user, vehicles: updatedVehicles };
