@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: vehicle-service
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/servexa_vehicle_db
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  
+  profiles:
+    active: local
+
+server:
+  port: 8084
+  servlet:
+    context-path: /
+
+logging:
+  level:
+    root: INFO
+    com.servexa.vehicle: DEBUG
+    org.springframework.web: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Application specific properties
+app:
+  name: ServeXa Vehicle Service
+  version: 1.0.0
+
+# JWT Configuration (if needed for validation)
+jwt:
+  secret: ${JWT_SECRET:your-secret-key-here}
+  expiration: 3600000

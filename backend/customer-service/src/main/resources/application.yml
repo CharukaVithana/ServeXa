@@ -3,9 +3,9 @@ spring:
     name: customer-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/customer_service
-    username: svc_user
-    password: svc_password
+    url: jdbc:postgresql://localhost:5432/servexa_customer
+    username: postgres
+    password: password
     driver-class-name: org.postgresql.Driver
 
   jpa:

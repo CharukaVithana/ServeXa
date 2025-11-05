@@ -14,7 +14,7 @@
 
     <groupId>com.servexa</groupId>
     <artifactId>servexa-backend</artifactId>
-    <version>1.0.0</version>
+    <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>ServeXa Backend</name>
@@ -23,6 +23,8 @@
     <modules>
         <module>common-libs</module>
         <module>authentication-service</module>
+        <module>appointment-service</module>
+        <module>vehicle-service</module>
         <!-- <module>user-service</module> -->
         <!-- <module>api-gateway</module> -->
     </modules>
@@ -99,23 +101,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 
     <repositories>
         <repository>

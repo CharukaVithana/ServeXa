@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.servexa</groupId>
         <artifactId>servexa-backend</artifactId>
-        <version>1.0.0</version>
+        <version>0.0.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>common-libs</artifactId>

@@ -19,10 +19,9 @@ spring:
         format_sql: true
     show-sql: false
   
-  security:
-    jwt:
-      secret: ${JWT_SECRET:MySecretKeyForServeXaApplicationThatIsAtLeast256BitsLong123456}
-      expiration: ${JWT_EXPIRATION:86400000}
+jwt:
+  secret: ${JWT_SECRET:MySecretKeyForServeXaApplicationThatIsAtLeast256BitsLong123456}
+  expiration: ${JWT_EXPIRATION:86400000}
 
 server:
   port: ${PORT:8082}
