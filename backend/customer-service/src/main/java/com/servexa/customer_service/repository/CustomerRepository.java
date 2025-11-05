@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
-    // You can add custom queries later, for example:
-    // Optional<Customer> findByEmail(String email);
+    // Find customer by email (used to map authenticated user to customer record)
+    java.util.Optional<Customer> findByEmail(String email);
 }

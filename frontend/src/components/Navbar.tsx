@@ -59,7 +59,7 @@ const Navbar = () => {
       <div className="flex items-center gap-2">
         {isAuthenticated ? (
           <>
-            <span className="mr-4">Welcome, {user?.fullName}</span>
+            <span className="mr-4">Welcome, <RouterLink to="/profile" className="font-semibold hover:underline">{user?.fullName}</RouterLink></span>
             <RouterLink
               to="/dashboard"
               className="px-4 py-2 rounded bg-[#D72638] text-white font-semibold hover:bg-red-700"

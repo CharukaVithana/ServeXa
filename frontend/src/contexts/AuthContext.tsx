@@ -20,30 +20,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   });
 
   useEffect(() => {
-   
-    const mockUser: User = {
-      id: 'mock-user-123',
-      email: 'alex.johnson@example.com',
-      fullName: 'Alex Johnson',
-      phoneNumber: '0552265435',
-      profilePictureUrl: null,
-      address: '123 Main St, Anytown, USA 12345',
-      vehicles: [ 
-        { id: 'v1', registrationNumber: 'ABC-1234', model: '2020 Toyota Camry', year: '2020', imageUrl: '/car1.jpg' },
-        { id: 'v2', registrationNumber: 'XYZ-5678', model: '2018 Honda Civic', year: '2018', imageUrl: '/car2.jpg' },
-      ],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    setState({
-      user: mockUser,
-      isAuthenticated: true,
-      isLoading: false,
-      error: null,
-    });
-
-  /*useEffect(() => {
     const initAuth = async () => {
       try {
         const user = await authService.getCurrentUser();
@@ -72,7 +48,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
 
-    initAuth();  */
+    initAuth();
   }, []);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
