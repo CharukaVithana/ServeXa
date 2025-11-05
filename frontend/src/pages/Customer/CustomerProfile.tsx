@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { FaUser, FaCar, FaHistory, FaCalendarAlt, FaBell, FaCog, FaSignOutAlt, FaPencilAlt } from 'react-icons/fa';
 import { useAuth } from '../../hooks/useAuth';
 import ProfilePictureModal from '../../components/ProfilePictureModal';
+import Sidebar from '../../components/Sidebar';
 
 const CustomerProfile = () => {
     const { user, logout, updateProfilePicture } = useAuth();
@@ -31,8 +32,10 @@ const CustomerProfile = () => {
     };
 
     return (
-        <div className="min-h-screen  font-sans">
-            <div className=" mx-auto bg-white ">
+        <div className="min-h-screen font-sans flex bg-gray-50">
+            <Sidebar />
+
+            <div className=" flex-1 overflow-y-auto bg-white ">
                 {/* Header */}
                 <header className="p-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center">
                     <div className="flex items-center gap-4">
@@ -88,17 +91,7 @@ const CustomerProfile = () => {
                     <Outlet />
                 </div>
 
-                {/* Footer */}
-                <footer className="p-6 border-t border-gray-200 flex justify-between items-center">
-                    <button className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
-                        <FaCog />
-                        <span>Settings</span>
-                    </button>
-                    <button onClick={handleLogout} className="flex items-center gap-2 text-red-500 hover:text-red-700">
-                        <FaSignOutAlt />
-                        <span>Logout</span>
-                    </button>
-                </footer>
+                
             </div>
             <ProfilePictureModal
                 isOpen={isPictureModalOpen}

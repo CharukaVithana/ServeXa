@@ -1,6 +1,7 @@
 export interface User {
   id: string;
   email: string;
+  role: "customer" | "employee" | "admin";
   fullName: string;
   phoneNumber?: string;
   address?: string;
@@ -9,6 +10,7 @@ export interface User {
   createdAt: Date;
   updatedAt: Date;
 }
+
 
 export interface LoginCredentials {
   email: string;
