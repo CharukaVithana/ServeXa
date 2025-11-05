@@ -5,75 +5,109 @@ import Sidebar from "../../components/Sidebar";
 
 const ChatSupport: React.FC = () => {
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<{ sender: string; text: string }[]>(
-    [
-      { sender: "support", text: "Hi there! How can we help you today?" },
-    ]
-  );
+  const [messages, setMessages] = useState<{ sender: string; text: string }[]>([
+    { sender: "support", text: "Hi there! 👋 How can I assist you today?" },
+  ]);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
-    setMessages([...messages, { sender: "user", text: input }]);
-    setInput("");
 
-    // Simulated reply
-    setTimeout(() => {
+    const userMessage = input.trim();
+    setMessages((prev) => [...prev, { sender: "user", text: userMessage }]);
+    setInput("");
+    setLoading(true);
+
+    try {
+      // Call your backend AI endpoint (or directly OpenAI API)
+      const response = await fetch("http://localhost:5000/api/chatbot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMessage }),
+      });
+
+      const data = await response.json();
+
       setMessages((prev) => [
         ...prev,
-        { sender: "support", text: "Thanks! We'll check and get back to you shortly." },
+        { sender: "support", text: data.reply || "Sorry, I didn't understand that." },
       ]);
-    }, 1000);
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        { sender: "support", text: "⚠️ There was a problem connecting to the support server." },
+      ]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Sidebar />
-      {/* Header */}
-      <div className="bg-white border-b p-4 flex items-center gap-3 shadow-sm">
-        <button onClick={() => navigate("/cus-dashboard")}>
-          <ArrowLeft size={22} className="text-gray-700 hover:text-gray-900" />
-        </button>
-        <h2 className="font-semibold text-lg text-gray-800">Chat with Support</h2>
+    <div className="flex bg-gray-50 text-slate-800 h-screen overflow-hidden">
+      {/* Sidebar */}
+      <div className="fixed left-0 top-0 h-full z-20">
+        <Sidebar />
       </div>
 
-      {/* Chat Box */}
-      <div className="flex-1 p-6 overflow-y-auto space-y-4">
-        {messages.map((msg, i) => (
-          <div
-            key={i}
-            className={`flex ${
-              msg.sender === "user" ? "justify-end" : "justify-start"
-            }`}
-          >
+      {/* Main Chat Section */}
+      <div className="flex-1 ml-64 flex flex-col h-screen">
+        {/* Header */}
+        <div className="bg-white border-b p-4 flex items-center gap-3 shadow-sm">
+          <button onClick={() => navigate("/cus-dashboard")}>
+            <ArrowLeft size={22} className="text-gray-700 hover:text-gray-900" />
+          </button>
+          <h2 className="font-semibold text-lg text-gray-800">Chat with Support</h2>
+        </div>
+
+        {/* Chat Messages */}
+        <div className="flex-1 p-6 overflow-y-auto space-y-4">
+          {messages.map((msg, i) => (
             <div
-              className={`px-4 py-2 rounded-lg max-w-xs ${
-                msg.sender === "user"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-800"
+              key={i}
+              className={`flex ${
+                msg.sender === "user" ? "justify-end" : "justify-start"
               }`}
             >
-              {msg.text}
+              <div
+                className={`px-4 py-2 rounded-lg max-w-xs ${
+                  msg.sender === "user"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 text-gray-800"
+                }`}
+              >
+                {msg.text}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
 
-      {/* Input Box */}
-      <div className="p-4 bg-white border-t flex items-center gap-3">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type your message..."
-          className="flex-1 border rounded-full px-4 py-2 outline-none focus:ring-2 focus:ring-blue-400"
-        />
-        <button
-          onClick={handleSend}
-          className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full"
-        >
-          <Send size={18} />
-        </button>
+          {loading && (
+            <div className="flex justify-start">
+              <div className="px-4 py-2 bg-gray-200 text-gray-600 rounded-lg max-w-xs animate-pulse">
+                Typing...
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Input Box */}
+        <div className="p-4 bg-white border-t flex items-center gap-3">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            placeholder="Type your message..."
+            className="flex-1 border rounded-full px-4 py-2 outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          <button
+            onClick={handleSend}
+            disabled={loading}
+            className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full disabled:opacity-50"
+          >
+            <Send size={18} />
+          </button>
+        </div>
       </div>
     </div>
   );

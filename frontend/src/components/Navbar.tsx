@@ -1,65 +1,69 @@
 import React from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { Link as ScrollLink } from "react-scroll";
 
-const Navbar = () => {
+const Navbar: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     await logout();
-    navigate('/');
+    navigate("/");
+  };
+
+  // Smooth scroll helper with offset for fixed navbar
+  const scrollToId = (id: string, offset = 80) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.pageYOffset - offset;
+    window.scrollTo({ top, behavior: "smooth" });
   };
 
   return (
-    <nav className="flex items-center justify-between px-12 py-4 bg-[#282828] text-white fixed w-full z-50">
+    <nav className="flex items-center justify-between px-6 md:px-12 py-4 bg-[#282828] text-white fixed w-full z-50">
       <div className="flex items-center gap-2">
-        <img src="/logo.png" alt="ServeXa Logo" className="h-10 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}/>
+        <img
+          src="/logo.png"
+          alt="ServeXa Logo"
+          className="h-10 cursor-pointer"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        />
       </div>
 
       <div className="hidden md:flex items-center gap-8">
-        <ScrollLink
-          to="hero"
-          smooth={true}
-          duration={500}
-          className="cursor-pointer hover:text-[#D72638]"
+        <button
+          onClick={() => scrollToId("hero", 80)}
+          className="cursor-pointer hover:text-[#D72638] focus:outline-none"
         >
           Home
-        </ScrollLink>
-        <ScrollLink
-          to="service"
-          smooth={true}
-          duration={500}
-          offset={-80} // Adjust for navbar height
-          className="cursor-pointer hover:text-[#D72638]"
+        </button>
+
+        <button
+          onClick={() => scrollToId("service", 80)}
+          className="cursor-pointer hover:text-[#D72638] focus:outline-none"
         >
           Service
-        </ScrollLink>
-        <ScrollLink
-          to="about"
-          smooth={true}
-          duration={500}
-          offset={-80}
-          className="cursor-pointer hover:text-[#D72638]"
+        </button>
+
+        <button
+          onClick={() => scrollToId("about", 80)}
+          className="cursor-pointer hover:text-[#D72638] focus:outline-none"
         >
           About
-        </ScrollLink>
-        <ScrollLink
-          to="contact"
-          smooth={true}
-          duration={500}
-          offset={-80}
-          className="cursor-pointer hover:text-[#D72638]"
+        </button>
+
+        <button
+          onClick={() => scrollToId("contact", 80)}
+          className="cursor-pointer hover:text-[#D72638] focus:outline-none"
         >
           Contact
-        </ScrollLink>
+        </button>
       </div>
 
       <div className="flex items-center gap-2">
         {isAuthenticated ? (
           <>
-            <span className="mr-4">Welcome, {user?.fullName}</span>
+            <span className="hidden sm:inline mr-4">Welcome, {user?.fullName}</span>
             <RouterLink
               to="/dashboard"
               className="px-4 py-2 rounded bg-[#D72638] text-white font-semibold hover:bg-red-700"
