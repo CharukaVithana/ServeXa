@@ -4,6 +4,7 @@ import { useForm } from '../../hooks/useForm';
 import { validateForm, authValidation } from '../../utils/validation';
 import type { User } from '../../types/auth';
 
+
 // A reusable component for displaying information in view mode
 const InfoField = ({ label, value }: { label: string, value: string | undefined }) => (
     <div>

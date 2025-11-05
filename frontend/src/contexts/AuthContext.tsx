@@ -83,13 +83,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       authService.setStoredToken(response.accessToken);
       
       setState({
-        user: {
-          id: response.userId,
-          email: response.email,
-          fullName: response.fullName,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
+       user: {
+  id: response.userId,
+  email: response.email,
+  fullName: response.fullName,
+  role: response.role.toLowerCase() as "customer" | "employee" | "admin",
+  createdAt: new Date(),
+  updatedAt: new Date(),
+},
         isAuthenticated: true,
         isLoading: false,
         error: null,
@@ -114,13 +115,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       authService.setStoredToken(response.accessToken);
       
       setState({
-        user: {
-          id: response.userId,
-          email: response.email,
-          fullName: response.fullName,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
+       user: {
+  id: response.userId,
+  email: response.email,
+  fullName: response.fullName,
+  role: response.role.toLowerCase() as "customer" | "employee" | "admin",
+  createdAt: new Date(),
+  updatedAt: new Date(),
+},
+
         isAuthenticated: true,
         isLoading: false,
         error: null,
