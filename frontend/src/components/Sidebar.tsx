@@ -25,10 +25,10 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
 
   const menus = {
     customer: [
-      { name: "Dashboard", icon: LayoutDashboard, path: "/cus-dashboard" },
-      { name: "Appointment", icon: Calendar, path: "/customer/appointment" },
+      { name: "Dashboard", icon: LayoutDashboard, path: "/" },
+      { name: "Appointment", icon: Calendar, path: "appointments" },
       { name: "Contact", icon: Phone, path: "/customer/contact" },
-      { name: "Profile", icon: User, path: "/customer/profile" },
+      { name: "Profile", icon: User, path: "/profile" },
       { name: "Settings", icon: Settings, path: "/customer/settings" },
     ],
     employee: [
@@ -52,7 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
 
   return (
     <div
-      className={`h-screen flex flex-col justify-between bg-black text-white shadow-lg ${
+      className={`fixed top-0 left-0 h-screen flex flex-col justify-between bg-black text-white shadow-lg z-50 ${
         collapsed ? "w-20" : "w-64"
       } transition-all duration-300`}
     >
