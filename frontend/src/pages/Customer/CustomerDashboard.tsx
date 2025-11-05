@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import {
@@ -9,47 +9,89 @@ import {
   CreditCard,
   Star,
 } from "lucide-react";
+import { FaPencilAlt } from "react-icons/fa";
 import Sidebar from "../../components/Sidebar";
+import ProfilePictureModal from "../../components/ProfilePictureModal";
+
+interface DashboardStats {
+  activeServices: number;
+  totalVehicles: number;
+  pastServices: number;
+  upcomingAppointments: number;
+  totalSpent: number;
+  averageRating: number;
+  totalServices: number;
+}
 
 const CustomerDashboard: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, updateProfilePicture } = useAuth();
   const navigate = useNavigate();
+  const [isPictureModalOpen, setPictureModalOpen] = useState(false);
+
+  const stats: DashboardStats = {
+    activeServices: 3,
+    totalVehicles: 2,
+    pastServices: 15,
+    upcomingAppointments: 1,
+    totalSpent: 1230,
+    averageRating: 4.7,
+    totalServices: 22,
+  };
 
   const handleLogout = async () => {
     await logout();
     navigate("/login");
   };
 
+  const getAvatarUrl = () => {
+    if (user?.profilePictureUrl) return user.profilePictureUrl;
+    const name = user?.fullName?.replace(" ", "+") || "User";
+    return `https://ui-avatars.com/api/?name=${name}&background=D72638&color=fff&rounded=true&size=100`;
+  };
+
   return (
     <div className="flex h-screen bg-gray-50 text-slate-800 overflow-hidden">
-      {/* ===== SIDEBAR ===== */}
+      {/* Sidebar */}
       <Sidebar />
 
-      {/* ===== MAIN CONTENT ===== */}
-      <div className="flex-1 h-full overflow-y-auto p-8">
+      {/* Main content */}
+      <div className="flex-1 h-full overflow-y-auto p-8 ml-64 transition-all duration-300">
         <div className="w-full max-w-7xl mx-auto space-y-10 pb-10">
-          {/* ===== CUSTOMER INFO ===== */}
+          {/* ===== PROFILE SECTION ===== */}
           <div className="bg-white rounded-xl shadow border border-gray-200 p-6 flex flex-col sm:flex-row items-center sm:items-start gap-6">
-            <img
-              src="https://via.placeholder.com/100"
-              alt="profile"
-              className="w-24 h-24 rounded-full border-4 border-gray-300 object-cover"
-            />
+            <div
+              className="relative cursor-pointer group"
+              onClick={() => setPictureModalOpen(true)}
+              title="Click to change profile picture"
+            >
+              <img
+                src={getAvatarUrl()}
+                alt="profile"
+                className="w-24 h-24 rounded-full border-4 border-[#D72638] object-cover"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 rounded-full flex items-center justify-center transition-opacity">
+                <FaPencilAlt className="text-white opacity-0 group-hover:opacity-100" />
+              </div>
+            </div>
+
             <div className="flex-1 text-center sm:text-left">
-              <h2 className="text-xl font-semibold">
+              <h2 className="text-xl font-semibold text-gray-800">
                 {user?.fullName || "Alex Johnson"}
               </h2>
               <p className="text-gray-600">
                 {user?.email || "alex.johnson@example.com"}
               </p>
-              <p className="text-gray-600">{user?.phone || "(555) 123-4567"}</p>
+              <p className="text-gray-600">0752265435</p>
             </div>
-            <button
-              onClick={() => navigate("/customer/profile")}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
-            >
-              Edit Profile
-            </button>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => navigate("/profile")}
+                className="bg-[#D72638] hover:bg-red-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
+              >
+                <FaPencilAlt /> Edit Profile
+              </button>
+            </div>
           </div>
 
           {/* ===== STATS OVERVIEW ===== */}
@@ -58,25 +100,25 @@ const CustomerDashboard: React.FC = () => {
               {
                 icon: Wrench,
                 label: "Active Services",
-                value: 3,
-                color: "bg-blue-100 text-blue-600",
+                value: stats.activeServices,
+                color: "bg-red-100 text-[#D72638]",
               },
               {
                 icon: Car,
                 label: "Total Vehicles",
-                value: 2,
+                value: stats.totalVehicles,
                 color: "bg-green-100 text-green-600",
               },
               {
                 icon: Clock,
                 label: "Past Services",
-                value: 15,
+                value: stats.pastServices,
                 color: "bg-yellow-100 text-yellow-600",
               },
               {
                 icon: Calendar,
                 label: "Upcoming Appointments",
-                value: 1,
+                value: stats.upcomingAppointments,
                 color: "bg-purple-100 text-purple-600",
               },
             ].map((stat, i) => (
@@ -97,7 +139,7 @@ const CustomerDashboard: React.FC = () => {
 
           {/* ===== SERVICE SUMMARY & QUICK ACTIONS ===== */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Current Service Summary */}
+            {/* Ongoing Service Summary */}
             <div className="border rounded-xl p-6 bg-white shadow-sm">
               <h4 className="text-lg font-semibold mb-4 border-b pb-2 text-gray-800">
                 Ongoing Service
@@ -109,7 +151,7 @@ const CustomerDashboard: React.FC = () => {
 
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-medium">Progress</p>
-                <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
+                <span className="text-xs text-black bg-yellow-100 px-2 py-1 rounded-full">
                   In Progress
                 </span>
               </div>
@@ -121,7 +163,7 @@ const CustomerDashboard: React.FC = () => {
                 ></div>
               </div>
 
-              <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm">
+              <button className="bg-blue-500 hover:bg-blue-400 text-black px-4 py-2 rounded text-sm">
                 View Details
               </button>
             </div>
@@ -158,24 +200,36 @@ const CustomerDashboard: React.FC = () => {
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
               <div>
-                <CreditCard className="mx-auto text-blue-500 mb-2" size={28} />
-                <p className="text-2xl font-semibold">$1,230</p>
+                <CreditCard className="mx-auto text-[#D72638] mb-2" size={28} />
+                <p className="text-2xl font-semibold">
+                  ${stats.totalSpent.toFixed(2)}
+                </p>
                 <p className="text-gray-600 text-sm">Total Spent</p>
               </div>
               <div>
                 <Star className="mx-auto text-yellow-500 mb-2" size={28} />
-                <p className="text-2xl font-semibold">4.7</p>
+                <p className="text-2xl font-semibold">
+                  {stats.averageRating.toFixed(1)}
+                </p>
                 <p className="text-gray-600 text-sm">Average Rating</p>
               </div>
               <div>
                 <Wrench className="mx-auto text-green-500 mb-2" size={28} />
-                <p className="text-2xl font-semibold">22</p>
+                <p className="text-2xl font-semibold">{stats.totalServices}</p>
                 <p className="text-gray-600 text-sm">Total Services</p>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Profile Picture Modal */}
+      <ProfilePictureModal
+        isOpen={isPictureModalOpen}
+        onClose={() => setPictureModalOpen(false)}
+        onSave={updateProfilePicture}
+        currentImageUrl={user?.profilePictureUrl}
+      />
     </div>
   );
 };
