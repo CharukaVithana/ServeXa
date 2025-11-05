@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { FaExclamationTriangle, FaCheckCircle, FaTag, FaRegClock } from 'react-icons/fa';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import authService from '../../services/authService';
+import { FaExclamationTriangle, FaCheckCircle, FaTag, FaRegClock, FaTrash, FaEnvelopeOpen } from 'react-icons/fa';
 
 const ToggleSwitch = ({ id, label, checked, onChange }: { id: string, label: string, checked: boolean, onChange: (checked: boolean) => void }) => (
     <div className="flex items-center justify-between">
@@ -11,12 +13,18 @@ const ToggleSwitch = ({ id, label, checked, onChange }: { id: string, label: str
     </div>
 );
 
-const NotificationItem = ({ icon, text, time, colorClass }: { icon: React.ReactNode, text: string, time: string, colorClass: string }) => (
-    <div className={`p-4 rounded-lg flex items-start gap-4 ${colorClass}`}>
+const NotificationItem = ({ id, icon, text, time, colorClass, read, onMarkRead, onDelete }: { id: number, icon: React.ReactNode, text: string, time: string, colorClass: string, read: boolean, onMarkRead: (id: number) => void, onDelete: (id: number) => void }) => (
+    <div className={`p-4 rounded-lg flex items-start gap-4 ${colorClass}`}> 
         <div className="text-xl mt-1">{icon}</div>
-        <div>
-            <p>{text}</p>
+        <div className="flex-1">
+            <p className={`${read ? 'opacity-70 line-through' : ''}`}>{text}</p>
             <p className="text-sm opacity-75">{time}</p>
+        </div>
+        <div className="flex items-center gap-2">
+            {!read && (
+                <button onClick={() => onMarkRead(id)} className="text-sm text-green-600 hover:underline flex items-center gap-2"><FaEnvelopeOpen /> <span>Mark read</span></button>
+            )}
+            <button onClick={() => onDelete(id)} className="text-sm text-red-600 hover:underline flex items-center gap-2"><FaTrash /> <span>Delete</span></button>
         </div>
     </div>
 );
@@ -28,22 +36,117 @@ const Notifications = () => {
         specialOffers: false,
     });
 
-    const notifications = [
-        { icon: <FaRegClock />, text: 'Oil change is 60% complete. Expected completion in 25 minutes.', time: '15 minutes ago', colorClass: 'bg-orange-50 text-orange-700' },
-        { icon: <FaExclamationTriangle />, text: 'Reminder: Your tire rotation appointment is tomorrow at 10:30 AM.', time: '2 hours ago', colorClass: 'bg-yellow-50 text-yellow-700' },
-        { icon: <FaCheckCircle />, text: 'Your brake service has been completed. Your vehicle is ready for pickup.', time: 'Yesterday', colorClass: 'bg-green-50 text-green-700' },
-        { icon: <FaTag />, text: 'Special summer discount: 15% off on all A/C services this month!', time: '3 days ago', colorClass: 'bg-blue-50 text-blue-700' },
-    ];
+    type Notification = { id: number; text: string; time: string; read: boolean; type?: string; customerId?: number };
+    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const fetchNotifications = async () => {
+            try {
+                setLoading(true);
+                const token = authService.getStoredToken();
+                const base = import.meta.env.VITE_CUSTOMER_API || 'http://localhost:8082';
+                const res = await axios.get(`${base}/api/notifications/me`, {
+                    headers: {
+                        Authorization: token ? `Bearer ${token}` : '',
+                    }
+                });
+
+                // Map backend Notification -> local Notification shape
+                const data = (res.data || []) as any[];
+                const mapped = data.map(n => ({
+                    id: n.id,
+                    text: n.message || n.text || '',
+                    time: n.createdAt ? new Date(n.createdAt).toLocaleString() : (n.time || ''),
+                    read: !!n.isRead,
+                    type: n.type,
+                    customerId: n.customerId,
+                } as Notification));
+
+                setNotifications(mapped || []);
+            } catch (err) {
+                console.error('Failed to fetch notifications', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchNotifications();
+    }, []);
+
+    const markAsRead = async (id: number, customerId?: number) => {
+        try {
+            const base = import.meta.env.VITE_CUSTOMER_API || 'http://localhost:8082';
+            const token = authService.getStoredToken();
+            if (!customerId) return;
+            await axios.put(`${base}/api/customers/${customerId}/notifications/${id}/read`, {}, {
+                headers: { Authorization: token ? `Bearer ${token}` : '' }
+            });
+            setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+        } catch (err) {
+            console.error('Failed to mark notification as read', err);
+        }
+    };
+
+    const markAllAsRead = async () => {
+        try {
+            const base = import.meta.env.VITE_CUSTOMER_API || 'http://localhost:8082';
+            const token = authService.getStoredToken();
+            const unread = notifications.filter(n => !n.read && n.customerId);
+            await Promise.all(unread.map(n => axios.put(`${base}/api/customers/${n.customerId}/notifications/${n.id}/read`, {}, {
+                headers: { Authorization: token ? `Bearer ${token}` : '' }
+            })));
+            setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+        } catch (err) {
+            console.error('Failed to mark all as read', err);
+        }
+    };
+
+    const deleteNotification = async (id: number, customerId?: number) => {
+        try {
+            const base = import.meta.env.VITE_CUSTOMER_API || 'http://localhost:8082';
+            const token = authService.getStoredToken();
+            if (!customerId) return;
+            await axios.delete(`${base}/api/customers/${customerId}/notifications/${id}`, {
+                headers: { Authorization: token ? `Bearer ${token}` : '' }
+            });
+            setNotifications(prev => prev.filter(n => n.id !== id));
+        } catch (err) {
+            console.error('Failed to delete notification', err);
+        }
+    };
+
+    const iconFor = (n: Notification) => {
+        switch (n.type) {
+            case 'reminder': return <FaExclamationTriangle />;
+            case 'completed': return <FaCheckCircle />;
+            case 'offer': return <FaTag />;
+            default: return <FaRegClock />;
+        }
+    };
+
+    const colorFor = (n: Notification) => n.read ? 'bg-gray-50 text-gray-600' : 'bg-white';
 
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-gray-800">Notifications</h2>
-                <button className="text-sm text-red-500 hover:underline">Mark all as read</button>
+                <button onClick={markAllAsRead} className="text-sm text-red-500 hover:underline">Mark all as read</button>
             </div>
-            <div className="space-y-3 mb-8">
-                {notifications.map((n, i) => <NotificationItem key={i} {...n} />)}
-            </div>
+
+            {loading ? (
+                <p className="text-sm text-gray-500">Loading notifications...</p>
+            ) : (
+                <div className="space-y-3 mb-8">
+                    {notifications.length === 0 ? (
+                        <p className="text-sm text-gray-500">No notifications</p>
+                    ) : (
+                        notifications.map(n => (
+                            <NotificationItem key={n.id} id={n.id} icon={iconFor(n)} text={n.text} time={n.time} colorClass={colorFor(n)} read={n.read} onMarkRead={(id) => markAsRead(id, n.customerId)} onDelete={(id) => deleteNotification(id, n.customerId)} />
+                        ))
+                    )}
+                </div>
+            )}
+
             <div className="text-center mb-8">
                 <button className="text-sm text-red-500 font-semibold hover:underline">View All Notifications</button>
             </div>
