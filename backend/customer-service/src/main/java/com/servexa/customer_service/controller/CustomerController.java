@@ -27,9 +27,11 @@ public class CustomerController {
     // PUT /api/customers/profile
     @PutMapping("/profile")
     public ResponseEntity<Customer> updateCustomerProfile(@RequestBody Customer updatedCustomer) {
+        System.out.println("Received update: " + updatedCustomer);
         Customer saved = customerService.saveCustomer(updatedCustomer);
         return ResponseEntity.ok(saved);
     }
+
 
     // GET /api/customers
     @GetMapping
