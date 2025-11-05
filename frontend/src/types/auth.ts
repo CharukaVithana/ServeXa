@@ -55,9 +55,9 @@ export interface AuthContextType extends AuthState {
   resetPassword: (data: ResetPasswordData) => Promise<void>;
   clearError: () => void;
   updateUser: (data: Partial<User>) => void;
-  addVehicle: (vehicle: Omit<Vehicle, 'id'>) => void;
-  updateVehicle: (id: string, vehicleData: Omit<Vehicle, 'id'>) => void;
-  removeVehicle: (id: string) => void;
+  addVehicle: (vehicle: Omit<Vehicle, 'id'>) => Promise<void>;
+  updateVehicle: (id: string, vehicleData: Omit<Vehicle, 'id'>) => Promise<void>;
+  removeVehicle: (id: string) => Promise<void>;
   updateProfilePicture: (imageUrl: string | null) => void;
 }
 

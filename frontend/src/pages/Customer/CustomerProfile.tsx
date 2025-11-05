@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { FaUser, FaCar, FaHistory, FaCalendarAlt, FaBell, FaCog, FaSignOutAlt, FaPencilAlt } from 'react-icons/fa';
+import { FaUser, FaCar, FaHistory, FaCalendarAlt, FaBell, FaPencilAlt } from 'react-icons/fa';
 import { useAuth } from '../../hooks/useAuth';
 import ProfilePictureModal from '../../components/ProfilePictureModal';
 import Sidebar from '../../components/Sidebar';
@@ -58,7 +58,7 @@ const CustomerProfile = () => {
                         <div>
                             <h1 className="text-2xl font-bold text-gray-800">{user?.fullName || 'Alex Johnson'}</h1>
                             <p className="text-gray-600">{user?.email || 'alex.johnson@example.com'}</p>
-                            <p className="text-gray-600">0552265435</p>
+                            <p className="text-gray-600">0752265435</p>
                         </div>
                     </div>
                     <button onClick={() => setPictureModalOpen(true)} className="bg-[#D72638] text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 flex items-center gap-2 mt-4 sm:mt-0">
