@@ -29,11 +29,24 @@ const Login = () => {
     onSubmit: async (values) => {
       try {
         setServerError(null);
-        await login(values);
+        
+        // 1️⃣ Call your authService.login()
+        const response = await authService.login(values);
+
+        // 2️⃣ Store the JWT token locally
+        authService.setStoredToken(response.accessToken);
+
+        // 3️⃣ (Optional) You can store user info if you need
+        localStorage.setItem('user', JSON.stringify(response));
+
+        // 4️⃣ Redirect to dashboard or home
+        window.location.href = '/dashboard'; // Change this route to match your app
+
       } catch (error) {
         setServerError(error instanceof Error ? error.message : "Login failed");
       }
     },
+
   });
 
   const handleSocialLogin = async (provider: 'google' | 'facebook') => {
