@@ -123,8 +123,25 @@ class AuthService {
       if (response.status === 401) {
         return null;
       }
-      const data = await this.handleResponse<any>(response);
-      return data.data || null;
+      const result = await this.handleResponse<any>(response);
+      const data = result.data || null;
+      if (!data) return null;
+
+      // Map AuthResponse -> User
+      const user: User = {
+        id: data.userId,
+        email: data.email,
+        fullName: data.fullName,
+        role: (data.role || 'CUSTOMER').toLowerCase() as any,
+        phoneNumber: data.phoneNumber || undefined,
+        address: data.address || undefined,
+        profilePictureUrl: data.profilePictureUrl || null,
+        vehicles: data.vehicles || [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      return user;
     } catch (error) {
       return null;
     }
