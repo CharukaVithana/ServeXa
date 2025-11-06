@@ -111,6 +111,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         id: response.userId,
         email: response.email,
         fullName: response.fullName,
+        phoneNumber: response.phoneNumber || undefined,
+        address: response.address || undefined,
+        profilePictureUrl: response.imageUrl || undefined,
         role: response.role.toLowerCase() as "customer" | "employee" | "admin",
         vehicles: [],
         createdAt: new Date(),
@@ -132,7 +135,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       }
       
-      navigate('/dashboard');
+      // Navigate based on role
+      if (user.role === 'customer') {
+        navigate('/cus-dashboard');
+      } else if (user.role === 'employee') {
+        navigate('/employee');
+      } else if (user.role === 'admin') {
+        navigate('/admin-dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error) {
       setState(prev => ({
         ...prev,
@@ -148,24 +160,52 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
       const response = await authService.signup(data);
       
-      authService.setStoredToken(response.accessToken);
+      // Check if the account is pending approval
+      if (response.status === 'PENDING') {
+        setState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: null,
+        }));
+        // Navigate to the pending approval page
+        navigate('/pending-approval');
+        return;
+      }
       
-      setState({
-       user: {
-  id: response.userId,
-  email: response.email,
-  fullName: response.fullName,
-  role: response.role.toLowerCase() as "customer" | "employee" | "admin",
-  createdAt: new Date(),
-  updatedAt: new Date(),
-},
-
-        isAuthenticated: true,
-        isLoading: false,
-        error: null,
-      });
-      
-      navigate('/dashboard');
+      // For approved accounts (customers), set token and authenticate
+      if (response.accessToken) {
+        authService.setStoredToken(response.accessToken);
+        
+        setState({
+          user: {
+            id: response.userId,
+            email: response.email,
+            fullName: response.fullName,
+            phoneNumber: response.phoneNumber || undefined,
+            address: response.address || undefined,
+            profilePictureUrl: response.imageUrl || undefined,
+            role: response.role.toLowerCase() as "customer" | "employee" | "admin",
+            vehicles: [],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+        });
+        
+        // Navigate based on role
+        const userRole = response.role.toLowerCase();
+        if (userRole === 'customer') {
+          navigate('/cus-dashboard');
+        } else if (userRole === 'employee') {
+          navigate('/employee');
+        } else if (userRole === 'admin') {
+          navigate('/admin-dashboard');
+        } else {
+          navigate('/dashboard');
+        }
+      }
     } catch (error) {
       setState(prev => ({
         ...prev,

@@ -5,7 +5,6 @@ import { useAuth } from "../../hooks/useAuth";
 import { useForm } from "../../hooks/useForm";
 import { authValidation, validateForm } from "../../utils/validation";
 import type { LoginCredentials } from "../../types/auth";
-import authService from "../../services/authService";
 
 const Login = () => {
   const { login } = useAuth();
@@ -29,19 +28,7 @@ const Login = () => {
     onSubmit: async (values) => {
       try {
         setServerError(null);
-        
-        // 1️⃣ Call your authService.login()
-        const response = await authService.login(values);
-
-        // 2️⃣ Store the JWT token locally
-        authService.setStoredToken(response.accessToken);
-
-        // 3️⃣ (Optional) You can store user info if you need
-        localStorage.setItem('user', JSON.stringify(response));
-
-        // 4️⃣ Redirect to dashboard or home
-        window.location.href = '/dashboard'; // Change this route to match your app
-
+        await login(values);
       } catch (error) {
         setServerError(error instanceof Error ? error.message : "Login failed");
       }
@@ -51,11 +38,8 @@ const Login = () => {
 
   const handleSocialLogin = async (provider: 'google' | 'facebook') => {
     try {
-      if (provider === 'google') {
-        await authService.loginWithGoogle();
-      } else {
-        await authService.loginWithFacebook();
-      }
+      // TODO: Implement social login
+      setServerError(`Social login with ${provider} is not yet implemented`);
     } catch (error) {
       setServerError(`Failed to login with ${provider}`);
     }
@@ -63,15 +47,15 @@ const Login = () => {
 
   return (
     <div className="flex min-h-screen">
-      <div className="w-1/3 h-screen relative">
+      <div className="hidden lg:block lg:w-1/3 lg:h-screen relative">
         <img src="/car1.jpg" alt="Car 1" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black bg-opacity-40" />
       </div>
 
-      <div className="w-2/3 flex flex-col justify-center items-center p-12 bg-white relative">
-        <h1 className="text-4xl font-bold mb-6">Welcome to ServeXa</h1>
-        <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-8">
-          <h2 className="text-2xl font-semibold mb-6 text-center">Login</h2>
+      <div className="w-full lg:w-2/3 flex flex-col justify-center items-center p-6 sm:p-8 md:p-12 bg-white">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-6 text-center">Welcome to ServeXa</h1>
+        <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-6 sm:p-8">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-center">Login</h2>
 
           {serverError && (
             <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">

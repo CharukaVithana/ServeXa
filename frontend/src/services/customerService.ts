@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_CUSTOMER_API_URL || 'http://localhost:8082/api';
+import { SERVICE_ENDPOINTS } from '../config/services';
+
+const API_BASE_URL = import.meta.env.VITE_CUSTOMER_API_URL || `${SERVICE_ENDPOINTS.customer}/api`;
 
 interface Customer {
   id: number;

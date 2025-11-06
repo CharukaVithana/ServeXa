@@ -4,6 +4,7 @@ import Login from "./pages/Authentication/Login";
 import Signup from "./pages/Authentication/SignUp";
 import ResetPasswordRequest from "./pages/Authentication/ResetPasswordRequest";
 import ResetPasswordNew from "./pages/Authentication/ResetPasswordNew";
+import PendingApproval from "./pages/Authentication/PendingApproval";
 import Landing from "./pages/Landing/Landing";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -38,6 +39,7 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/pending-approval" element={<PendingApproval />} />
           <Route path="/reset-password" element={<ResetPasswordRequest />} />
           <Route path="/reset-password/new" element={<ResetPasswordNew />} />
           

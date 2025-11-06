@@ -76,12 +76,14 @@ const CustomerDashboard: React.FC = () => {
 
             <div className="flex-1 text-center sm:text-left">
               <h2 className="text-xl font-semibold text-gray-800">
-                {user?.fullName || "Alex Johnson"}
+                {user?.fullName || "User"}
               </h2>
               <p className="text-gray-600">
-                {user?.email || "alex.johnson@example.com"}
+                {user?.email || "user@example.com"}
               </p>
-              <p className="text-gray-600">0752265435</p>
+              {user?.phoneNumber && (
+                <p className="text-gray-600">{user.phoneNumber}</p>
+              )}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">

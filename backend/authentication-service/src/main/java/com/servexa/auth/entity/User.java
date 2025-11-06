@@ -2,6 +2,7 @@ package com.servexa.auth.entity;
 
 import com.servexa.common.entity.BaseEntity;
 import com.servexa.common.enums.UserRole;
+import com.servexa.common.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,6 +29,12 @@ public class User extends BaseEntity {
     @Column(name = "phone_number")
     private String phoneNumber;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
+    @Column(name = "address", columnDefinition = "TEXT")
+    private String address;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private UserRole role;
@@ -37,4 +44,9 @@ public class User extends BaseEntity {
 
     @Column(name = "refresh_token")
     private String refreshToken;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    @Builder.Default
+    private UserStatus status = UserStatus.APPROVED;
 }

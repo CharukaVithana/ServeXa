@@ -16,6 +16,11 @@ services:
       - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     networks:
       - servexa-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Redis Cache
   redis:
@@ -50,18 +55,22 @@ services:
     ports:
       - "8081:8081"
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
       # - eureka-server
     networks:
       - servexa-network
     environment:
       SPRING_PROFILES_ACTIVE: docker
       DB_HOST: postgres
+      DB_PORT: 5432
       DB_USERNAME: postgres
       DB_PASSWORD: password
       REDIS_HOST: redis
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    restart: unless-stopped
 
   # Customer Service
   customer-service:

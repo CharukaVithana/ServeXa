@@ -4,17 +4,23 @@ import com.servexa.auth.dto.AuthResponse;
 import com.servexa.auth.dto.LoginRequest;
 import com.servexa.auth.dto.RefreshTokenRequest;
 import com.servexa.auth.dto.SignupRequest;
+import com.servexa.auth.dto.UpdateProfileRequest;
 import com.servexa.auth.service.AuthService;
 import com.servexa.common.dto.ApiResponse;
+import com.servexa.common.exception.UnauthorizedException;
+import com.servexa.common.security.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMethod;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -22,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final JwtUtil jwtUtil;
 
     @PostMapping("/signup")
     @Operation(summary = "Register a new user")
@@ -90,16 +97,73 @@ public class AuthController {
     @GetMapping("/me")
     @Operation(summary = "Get current user")
     public ResponseEntity<ApiResponse<AuthResponse>> getCurrentUser(@RequestHeader(value = "Authorization", required = false) String token) {
-        // For now, return null if no token is provided
-        if (token == null || !token.startsWith("Bearer ")) {
+        log.info("GET /me called with Authorization header: {}", token != null ? token.substring(0, Math.min(token.length(), 30)) + "..." : "null");
+        
+        try {
+            AuthResponse user = authService.getCurrentAuthenticatedUser(token);
+            
+            if (user == null) {
+                log.info("getCurrentAuthenticatedUser returned null");
+                return ResponseEntity.ok(
+                        ApiResponse.success(null, "No user authenticated")
+                );
+            }
+            
+            log.info("User retrieved successfully: {}", user.getEmail());
             return ResponseEntity.ok(
-                    ApiResponse.success(null, "No user authenticated")
+                    ApiResponse.success(user, "User retrieved successfully")
+            );
+        } catch (UnauthorizedException e) {
+            log.error("Unauthorized exception in /me endpoint: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ApiResponse.<AuthResponse>error(e.getMessage())
+            );
+        } catch (Exception e) {
+            log.error("Unexpected error in /me endpoint", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ApiResponse.<AuthResponse>error("Failed to retrieve user information")
             );
         }
+    }
+
+    @RequestMapping(value = "/profile", method = RequestMethod.PUT)
+    @Operation(summary = "Update user profile")
+    public ResponseEntity<ApiResponse<AuthResponse>> updateProfile(
+            @RequestHeader("Authorization") String token,
+            @Valid @RequestBody UpdateProfileRequest request) {
+        log.info("PUT /profile called");
         
-        // TODO: Implement actual token validation and user retrieval
-        return ResponseEntity.ok(
-                ApiResponse.success(null, "No user authenticated")
-        );
+        try {
+            // Extract user ID from token
+            if (token == null || !token.startsWith("Bearer ")) {
+                throw new UnauthorizedException("Invalid authorization header");
+            }
+            
+            String jwtToken = token.substring(7);
+            String userId = jwtUtil.getUserIdFromToken(jwtToken);
+            
+            // Validate token
+            if (!jwtUtil.validateToken(jwtToken)) {
+                throw new UnauthorizedException("Invalid or expired token");
+            }
+            
+            // Update profile
+            AuthResponse updatedProfile = authService.updateProfile(userId, request);
+            
+            return ResponseEntity.ok(
+                    ApiResponse.success(updatedProfile, "Profile updated successfully")
+            );
+            
+        } catch (UnauthorizedException e) {
+            log.error("Unauthorized exception in /profile endpoint: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ApiResponse.<AuthResponse>error(e.getMessage())
+            );
+        } catch (Exception e) {
+            log.error("Unexpected error in /profile endpoint", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ApiResponse.<AuthResponse>error("Failed to update profile")
+            );
+        }
     }
 }

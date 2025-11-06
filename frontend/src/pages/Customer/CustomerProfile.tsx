@@ -9,6 +9,9 @@ const CustomerProfile = () => {
     const { user, logout, updateProfilePicture } = useAuth();
     const navigate = useNavigate();
     const [isPictureModalOpen, setPictureModalOpen] = useState(false);
+    
+    // Debug: Log user data
+    console.log('Current user data:', user);
 
     const handleLogout = async () => {
         await logout();
@@ -35,7 +38,7 @@ const CustomerProfile = () => {
         <div className="min-h-screen font-sans flex bg-gray-50">
             <Sidebar />
 
-            <div className=" flex-1 overflow-y-auto bg-white ">
+            <div className="flex-1 overflow-y-auto bg-white lg:ml-64">
                 {/* Header */}
                 <header className="p-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center">
                     <div className="flex items-center gap-4">
@@ -46,7 +49,7 @@ const CustomerProfile = () => {
                            title="Click to change profile picture"
                         >
                         <img
-                            src={`https://ui-avatars.com/api/?name=${user?.fullName?.replace(' ', '+') || 'Alex+Johnson'}&background=D72638&color=fff&rounded=true&size=80`}
+                            src={getAvatarUrl()}
                             alt="User Avatar"
                             className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-red-500"
                         />
@@ -56,9 +59,11 @@ const CustomerProfile = () => {
                             </div>
                             </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-800">{user?.fullName || 'Alex Johnson'}</h1>
-                            <p className="text-gray-600">{user?.email || 'alex.johnson@example.com'}</p>
-                            <p className="text-gray-600">0752265435</p>
+                            <h1 className="text-2xl font-bold text-gray-800">{user?.fullName || 'User'}</h1>
+                            <p className="text-gray-600">{user?.email || 'user@example.com'}</p>
+                            {user?.phoneNumber && (
+                                <p className="text-gray-600">{user.phoneNumber}</p>
+                            )}
                         </div>
                     </div>
                     <button onClick={() => setPictureModalOpen(true)} className="bg-[#D72638] text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 flex items-center gap-2 mt-4 sm:mt-0">

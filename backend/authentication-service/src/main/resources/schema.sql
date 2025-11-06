@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     full_name VARCHAR(255) NOT NULL,
     phone_number VARCHAR(50),
     role VARCHAR(50) NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'APPROVED',
     is_email_verified BOOLEAN DEFAULT FALSE,
     is_active BOOLEAN DEFAULT TRUE,
     refresh_token VARCHAR(255),

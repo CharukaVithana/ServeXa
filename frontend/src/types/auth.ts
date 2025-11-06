@@ -22,6 +22,7 @@ export interface SignupData {
   fullName: string;
   email: string;
   password: string;
+  role?: 'CUSTOMER' | 'EMPLOYEE' | 'ADMIN';
 }
 
 export interface ResetPasswordData {
@@ -34,7 +35,12 @@ export interface AuthResponse {
   userId: string;
   email: string;
   fullName: string;
+  phoneNumber?: string;
+  address?: string;
+  imageUrl?: string;
+  isEmailVerified?: boolean;
   role: 'CUSTOMER' | 'EMPLOYEE' | 'ADMIN';
+  status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
   accessToken: string;
   refreshToken: string;
   expiresIn: number;
