@@ -62,6 +62,28 @@ services:
       REDIS_HOST: redis
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
 
+    # Booking Service
+  booking-service:
+      image: servexa/booking-service:latest
+      container_name: servexa-booking
+      build:
+        context: ./booking-service
+        dockerfile: Dockerfile
+      ports:
+        - "8083:8083"
+      depends_on:
+        - postgres
+        - eureka-server
+      networks:
+        - servexa-network
+      environment:
+        SPRING_PROFILES_ACTIVE: docker
+        DB_HOST: postgres
+        DB_USERNAME: postgres
+        DB_PASSWORD: password
+        EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+
   # API Gateway
   api-gateway:
     image: servexa/api-gateway:latest

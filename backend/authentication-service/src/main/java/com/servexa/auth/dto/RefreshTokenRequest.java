@@ -14,4 +14,8 @@ public class RefreshTokenRequest {
     
     @NotBlank(message = "Refresh token is required")
     private String refreshToken;
+
+    public String getRefreshToken() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }
