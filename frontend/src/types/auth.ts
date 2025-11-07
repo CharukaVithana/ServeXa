@@ -73,6 +73,7 @@ export type AuthFormErrors = {
 export interface Vehicle {
   id: string;
   registrationNumber: string;
+  make: string;
   model: string;
   year: string;
   color?: string;

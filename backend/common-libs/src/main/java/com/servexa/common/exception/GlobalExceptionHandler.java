@@ -9,7 +9,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -73,19 +72,6 @@ public class GlobalExceptionHandler {
         errorResponse.setValidationErrors(errors);
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNoResourceFoundException(
-            NoResourceFoundException ex, HttpServletRequest request) {
-        log.error("No resource found: {}", ex.getMessage());
-        ErrorResponse errorResponse = ErrorResponse.of(
-                HttpStatus.NOT_FOUND.value(),
-                "Not Found",
-                "The requested resource was not found",
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(Exception.class)

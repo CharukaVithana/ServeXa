@@ -1,4 +1,4 @@
-package com.servexa.employee.config;
+package com.servexa.appointment.config;
 
 import com.servexa.common.security.JwtUtil;
 import jakarta.servlet.FilterChain;
@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,74 +15,67 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
+    
     private final JwtUtil jwtUtil;
-
+    
     @Override
-    protected void doFilterInternal(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain
-    ) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, 
+                                  HttpServletResponse response, 
+                                  FilterChain filterChain) throws ServletException, IOException {
         
         final String authHeader = request.getHeader("Authorization");
-        final String jwt;
-        final String userEmail;
-
-        // Skip JWT validation for public endpoints
+        log.debug("Processing request to {} with auth header: {}", request.getRequestURI(), authHeader != null ? "Present" : "Missing");
+        
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.debug("No valid Bearer token found in request to {}", request.getRequestURI());
             filterChain.doFilter(request, response);
             return;
         }
-
+        
         try {
-            jwt = authHeader.substring(7);
+            final String jwt = authHeader.substring(7);
+            log.debug("Extracted JWT token: {}", jwt.substring(0, Math.min(20, jwt.length())) + "...");
             
             // Validate token
             if (!jwtUtil.validateToken(jwt)) {
-                log.warn("Invalid JWT token");
+                log.warn("JWT token is invalid or expired for request to {}", request.getRequestURI());
                 filterChain.doFilter(request, response);
                 return;
             }
-
-            // Extract user information from token
-            userEmail = jwtUtil.extractUsername(jwt);
+            
+            String username = jwtUtil.extractUsername(jwt);
             String userId = jwtUtil.extractUserId(jwt);
             String role = jwtUtil.extractRole(jwt).toString();
-
-            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                // Create authorities from role
-                List<SimpleGrantedAuthority> authorities = Collections.singletonList(
-                        new SimpleGrantedAuthority("ROLE_" + role)
-                );
-
-                // Create authentication token
+            
+            log.debug("Extracted user info - Username: {}, UserId: {}, Role: {}", username, userId, role);
+            
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userId, // principal
-                        null, // credentials
-                        authorities
+                    username, null, authorities
                 );
-
+                
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
-
-                // Store user info in request attributes for easy access in controllers
+                
+                // Store user info in request for later use
                 request.setAttribute("userId", userId);
-                request.setAttribute("userEmail", userEmail);
+                request.setAttribute("userEmail", username);
                 request.setAttribute("userRole", role);
+                
+                log.debug("Successfully authenticated user {} with role {} for request to {}", username, role, request.getRequestURI());
             }
         } catch (Exception e) {
-            log.error("Error processing JWT token", e);
+            log.error("Cannot set user authentication for request to {}: {}", request.getRequestURI(), e.getMessage(), e);
         }
-
+        
         filterChain.doFilter(request, response);
     }
 }
-

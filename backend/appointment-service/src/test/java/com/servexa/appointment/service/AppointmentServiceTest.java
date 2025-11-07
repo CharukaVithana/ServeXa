@@ -118,16 +118,16 @@ class AppointmentServiceTest {
     @Test
     void getAppointmentsByEmployeeId_Success() {
         appointment.setId("test-id-1");
-        appointment.setAssignedEmployeeId(10L);
+        appointment.setAssignedEmployeeId("10");
         appointment.setIsAssigned(true);
         List<Appointment> appointments = Arrays.asList(appointment);
-        when(appointmentRepository.findByAssignedEmployeeId(10L)).thenReturn(appointments);
+        when(appointmentRepository.findByAssignedEmployeeId("10")).thenReturn(appointments);
 
-        List<AppointmentResponse> responses = appointmentService.getAppointmentsByEmployeeId(10L);
+        List<AppointmentResponse> responses = appointmentService.getAppointmentsByEmployeeId("10");
 
         assertThat(responses).hasSize(1);
-        assertThat(responses.get(0).getAssignedEmployeeId()).isEqualTo(10L);
-        verify(appointmentRepository, times(1)).findByAssignedEmployeeId(10L);
+        assertThat(responses.get(0).getAssignedEmployeeId()).isEqualTo("10");
+        verify(appointmentRepository, times(1)).findByAssignedEmployeeId("10");
     }
 
     @Test
@@ -175,10 +175,10 @@ class AppointmentServiceTest {
         when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
         when(appointmentRepository.save(any(Appointment.class))).thenReturn(appointment);
 
-        AppointmentResponse response = appointmentService.assignEmployee(appointmentId, 10L);
+        AppointmentResponse response = appointmentService.assignEmployee(appointmentId, "10");
 
         assertThat(response).isNotNull();
-        assertThat(appointment.getAssignedEmployeeId()).isEqualTo(10L);
+        assertThat(appointment.getAssignedEmployeeId()).isEqualTo("10");
         assertThat(appointment.getIsAssigned()).isTrue();
         verify(appointmentRepository, times(1)).findById(appointmentId);
         verify(appointmentRepository, times(1)).save(appointment);
@@ -189,7 +189,7 @@ class AppointmentServiceTest {
         String nonExistentId = "non-existent-id";
         when(appointmentRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> appointmentService.assignEmployee(nonExistentId, 10L))
+        assertThatThrownBy(() -> appointmentService.assignEmployee(nonExistentId, "10"))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessage("Appointment not found with ID: " + nonExistentId);
     }

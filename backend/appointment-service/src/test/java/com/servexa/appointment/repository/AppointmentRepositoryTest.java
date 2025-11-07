@@ -53,7 +53,7 @@ class AppointmentRepositoryTest {
                 .paymentMethod("Card at Service Center")
                 .status("IN_PROGRESS")
                 .isAssigned(true)
-                .assignedEmployeeId(10L)
+                .assignedEmployeeId("10")
                 .duration(120)
                 .build();
 
@@ -80,16 +80,16 @@ class AppointmentRepositoryTest {
 
     @Test
     void findByAssignedEmployeeId_Success() {
-        List<Appointment> appointments = appointmentRepository.findByAssignedEmployeeId(10L);
+        List<Appointment> appointments = appointmentRepository.findByAssignedEmployeeId("10");
 
         assertThat(appointments).hasSize(1);
         assertThat(appointments.get(0).getFullName()).isEqualTo("Jane Smith");
-        assertThat(appointments.get(0).getAssignedEmployeeId()).isEqualTo(10L);
+        assertThat(appointments.get(0).getAssignedEmployeeId()).isEqualTo("10");
     }
 
     @Test
     void findByAssignedEmployeeId_NoResults() {
-        List<Appointment> appointments = appointmentRepository.findByAssignedEmployeeId(999L);
+        List<Appointment> appointments = appointmentRepository.findByAssignedEmployeeId("999");
 
         assertThat(appointments).isEmpty();
     }
@@ -150,12 +150,12 @@ class AppointmentRepositoryTest {
 
         appointment.setStatus("COMPLETED");
         appointment.setIsAssigned(true);
-        appointment.setAssignedEmployeeId(20L);
+        appointment.setAssignedEmployeeId("20");
 
         Appointment updatedAppointment = appointmentRepository.save(appointment);
 
         assertThat(updatedAppointment.getStatus()).isEqualTo("COMPLETED");
         assertThat(updatedAppointment.getIsAssigned()).isTrue();
-        assertThat(updatedAppointment.getAssignedEmployeeId()).isEqualTo(20L);
+        assertThat(updatedAppointment.getAssignedEmployeeId()).isEqualTo("20");
     }
 }
