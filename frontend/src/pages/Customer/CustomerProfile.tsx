@@ -35,7 +35,7 @@ const CustomerProfile = () => {
     };
 
     return (
-        <div className="min-h-screen font-sans flex bg-gray-50">
+        <div className="flex h-screen bg-gray-50 text-slate-800 overflow-hidden">
             <Sidebar />
 
             <div className="flex-1 overflow-y-auto bg-white lg:ml-64">

@@ -23,4 +23,8 @@ server:
 eureka:
   client:
     enabled: false
+ 
+services:
+  auth-service:
+    url: http://localhost:8081
 
