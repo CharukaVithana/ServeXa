@@ -24,7 +24,7 @@ public class AppointmentResponse {
     private String paymentMethod;
     private String status;
     private Boolean isAssigned;
-    private Long assignedEmployeeId;
+    private String assignedEmployeeId;
     private Integer duration;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

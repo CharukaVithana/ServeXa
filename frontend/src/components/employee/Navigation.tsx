@@ -1,6 +1,7 @@
-import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { ClipboardList, Clock, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { ClipboardList, Clock, CheckCircle, X } from "lucide-react";
+import employeeService from "../../services/employeeService";
 
 interface Tab {
   id: string;
@@ -13,29 +14,68 @@ interface Tab {
 const NavigationTabs: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [taskCounts, setTaskCounts] = useState({
+    assigned: 0,
+    ongoing: 0,
+    completed: 0,
+    cancelled: 0,
+  });
+
+  // Fetch task counts
+  useEffect(() => {
+    fetchTaskCounts();
+  }, []);
+
+  const fetchTaskCounts = async () => {
+    try {
+      const [assignedTasks, ongoingTasks, completedTasks, cancelledTasks] =
+        await Promise.all([
+          employeeService.getPendingTasks(),
+          employeeService.getOngoingTasks(),
+          employeeService.getCompletedTasks(),
+          employeeService.getRejectedTasks(),
+        ]);
+
+      setTaskCounts({
+        assigned: assignedTasks.length,
+        ongoing: ongoingTasks.length,
+        completed: completedTasks.length,
+        cancelled: cancelledTasks.length,
+      });
+    } catch (error) {
+      console.error("Error fetching task counts:", error);
+    }
+  };
 
   const tabs: Tab[] = [
     {
-      id: 'pending-tasks',
-      label: 'Assigned Tasks',
+      id: "pending-tasks",
+      label: "Assigned Tasks",
       icon: <ClipboardList size={18} />,
-      count: 2,
-      path: '/employee/pending-tasks'
+      count: taskCounts.assigned,
+      path: "/employee/pending-tasks",
     },
     {
-      id: 'current-tasks',
-      label: 'Ongoing Tasks',
+      id: "current-tasks",
+      label: "Ongoing Tasks",
       icon: <Clock size={18} />,
-      count: 2,
-      path: '/employee/current-tasks'
+      count: taskCounts.ongoing,
+      path: "/employee/current-tasks",
     },
     {
-      id: 'completed',
-      label: 'Completed',
+      id: "completed",
+      label: "Completed",
       icon: <CheckCircle size={18} />,
-      count: 3,
-      path: '/employee/completed'
-    }
+      count: taskCounts.completed,
+      path: "/employee/completed",
+    },
+    {
+      id: "rejected",
+      label: "Cancelled",
+      icon: <X size={18} />,
+      count: taskCounts.cancelled,
+      path: "/employee/rejected",
+    },
   ];
 
   const handleTabClick = (tab: Tab) => {
@@ -54,26 +94,34 @@ const NavigationTabs: React.FC = () => {
               onClick={() => handleTabClick(tab)}
               className={`
                 flex items-center gap-2 px-6 py-3 transition-all flex-1 justify-center
-                ${isActive(tab.path)
-                  ? 'text-red-600 border-b-2 border-red-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                ${
+                  isActive(tab.path)
+                    ? "text-red-600 border-b-2 border-red-600"
+                    : "text-gray-600 hover:text-gray-900"
                 }
               `}
             >
-              <span className={isActive(tab.path) ? 'text-red-600' : 'text-gray-500'}>
+              <span
+                className={
+                  isActive(tab.path) ? "text-red-600" : "text-gray-500"
+                }
+              >
                 {tab.icon}
               </span>
               <span className="font-normal text-sm whitespace-nowrap">
                 {tab.label}
               </span>
               {tab.count && (
-                <span className={`
+                <span
+                  className={`
                   flex items-center justify-center w-5 h-5 rounded-full text-xs font-semibold
-                  ${isActive(tab.path)
-                    ? 'bg-red-600 text-white'
-                    : 'bg-gray-300 text-gray-700'
+                  ${
+                    isActive(tab.path)
+                      ? "bg-red-600 text-white"
+                      : "bg-gray-300 text-gray-700"
                   }
-                `}>
+                `}
+                >
                   {tab.count}
                 </span>
               )}

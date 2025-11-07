@@ -1,54 +1,31 @@
 import React, { useState, useEffect } from "react";
-import { Search, Filter, Clock, CheckCircle, X } from "lucide-react";
+import { Search, Filter, X, Calendar } from "lucide-react";
 import employeeService from "../../services/employeeService";
 import type { Task } from "../../services/employeeService";
 
-const CurrentTasks: React.FC = () => {
-  const [ongoingTasks, setOngoingTasks] = useState<Task[]>([]);
+const Rejected: React.FC = () => {
+  const [rejectedTasks, setRejectedTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch ongoing tasks
+  // Fetch rejected tasks
   useEffect(() => {
-    fetchOngoingTasks();
+    fetchRejectedTasks();
   }, []);
 
-  const fetchOngoingTasks = async () => {
+  const fetchRejectedTasks = async () => {
     setLoading(true);
     try {
-      const tasks = await employeeService.getOngoingTasks();
-      setOngoingTasks(tasks);
+      const tasks = await employeeService.getRejectedTasks();
+      setRejectedTasks(tasks);
     } catch (error) {
-      console.error("Error fetching ongoing tasks:", error);
+      console.error("Error fetching rejected tasks:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCompleteTask = async (task: Task) => {
-    try {
-      await employeeService.completeTask(task.id, 0);
-      await fetchOngoingTasks();
-    } catch (error) {
-      console.error("Error completing task:", error);
-      alert("Failed to complete task");
-    }
-  };
-
-  const handleCancelTask = async (task: Task) => {
-    if (!confirm(`Are you sure you want to cancel task ${task.taskNumber}?`)) {
-      return;
-    }
-    try {
-      await employeeService.cancelTask(task.id);
-      await fetchOngoingTasks();
-    } catch (error) {
-      console.error("Error cancelling task:", error);
-      alert("Failed to cancel task");
-    }
-  };
-
-  const filteredTasks = ongoingTasks.filter(
+  const filteredTasks = rejectedTasks.filter(
     (task) =>
       task.taskNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       task.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -66,16 +43,31 @@ const CurrentTasks: React.FC = () => {
     return `${displayHour}:${minutes} ${ampm}`;
   };
 
+  // Format date
+  const formatDate = (dateString: string): string => {
+    if (!dateString) return "-";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch (error) {
+      return "-";
+    }
+  };
+
   return (
     <div className="w-full bg-transparent">
       <div className="max-w-7xl mx-auto px-6">
         {/* Section Title */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Active Service Jobs
+            Cancelled Tasks
           </h2>
           <p className="text-sm text-gray-600">
-            Monitor and manage your ongoing service tasks
+            View all cancelled service tasks
           </p>
         </div>
 
@@ -119,7 +111,7 @@ const CurrentTasks: React.FC = () => {
           </div>
         </div>
 
-        {/* Service Jobs Table */}
+        {/* Rejected Tasks Table */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-16 bg-white rounded-xl shadow-md mb-8">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mb-4"></div>
@@ -129,13 +121,13 @@ const CurrentTasks: React.FC = () => {
           <div className="text-center py-16 bg-white rounded-xl shadow-md mb-8">
             <div className="flex flex-col items-center">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Search size={32} className="text-gray-400" />
+                <X size={32} className="text-gray-400" />
               </div>
               <p className="text-gray-900 font-semibold mb-1">
-                No ongoing tasks
+                No cancelled tasks
               </p>
               <p className="text-gray-500 text-sm">
-                Start a task from the pending tasks list
+                All tasks are either pending, ongoing, or completed
               </p>
             </div>
           </div>
@@ -158,10 +150,10 @@ const CurrentTasks: React.FC = () => {
                       Status
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">
-                      Appointment Time
+                      Scheduled Time
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold">
-                      Actions
+                      Cancelled Date
                     </th>
                   </tr>
                 </thead>
@@ -190,41 +182,23 @@ const CurrentTasks: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-                          ONGOING
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                          <X size={14} className="mr-1" />
+                          CANCELLED
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-1 text-red-600">
-                          <Clock size={14} />
-                          <span className="text-sm font-semibold">
+                        <div className="flex items-center gap-1 text-gray-600">
+                          <Calendar size={14} />
+                          <span className="text-sm">
                             {formatTime(task.dueTime)}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCompleteTask(task);
-                            }}
-                            className="px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold transition-all shadow-sm flex items-center gap-1"
-                          >
-                            <CheckCircle size={14} />
-                            Complete
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCancelTask(task);
-                            }}
-                            className="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-semibold transition-all shadow-sm flex items-center gap-1"
-                          >
-                            <X size={14} />
-                            Cancel
-                          </button>
-                        </div>
+                        <span className="text-sm text-gray-600">
+                          {formatDate(task.updatedAt || "")}
+                        </span>
                       </td>
                     </tr>
                   ))}
@@ -238,4 +212,4 @@ const CurrentTasks: React.FC = () => {
   );
 };
 
-export default CurrentTasks;
+export default Rejected;
