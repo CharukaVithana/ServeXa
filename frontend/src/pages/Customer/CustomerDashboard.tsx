@@ -175,7 +175,7 @@ const CustomerDashboard: React.FC = () => {
               </h4>
               <div className="flex flex-col gap-3">
                 <button
-                  onClick={() => navigate("/customer/appointment")}
+                  onClick={() => navigate("/booking/new")}
                   className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
                 >
                   Book New Service
