@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuth } from "../../hooks/useAuth";
 import { useForm } from "../../hooks/useForm";
@@ -17,7 +17,7 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
-
+  const navigate = useNavigate();
   const {
     values,
     errors,
@@ -45,15 +45,16 @@ const Signup = () => {
       
       return formErrors;
     },
-    onSubmit: async (values) => {
-      try {
-        setServerError(null);
-        const { confirmPassword, ...signupData } = values;
-        await signup(signupData);
-      } catch (error) {
-        setServerError(error instanceof Error ? error.message : "Signup failed");
-      }
-    },
+  onSubmit: async (values) => {
+  try {
+    setServerError(null);
+    const { confirmPassword, ...signupData } = values;
+    await signup(signupData);
+    navigate("/login"); // 👈 redirect to login after success
+  } catch (error) {
+    setServerError(error instanceof Error ? error.message : "Signup failed");
+  }
+},
   });
 
   const handleSocialSignup = async (provider: 'google' | 'facebook') => {

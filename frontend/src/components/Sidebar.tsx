@@ -96,7 +96,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
         <button
           onClick={() => {
             logout();
-            navigate("/login");
+            navigate("/");
           }}
           className="flex items-center gap-3 text-red-400 hover:text-red-500 font-semibold w-full"
         >

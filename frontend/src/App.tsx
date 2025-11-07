@@ -5,13 +5,10 @@ import Signup from "./pages/Authentication/SignUp";
 import ResetPasswordRequest from "./pages/Authentication/ResetPasswordRequest";
 import ResetPasswordNew from "./pages/Authentication/ResetPasswordNew";
 import Landing from "./pages/Landing/Landing";
-import Dashboard from "./pages/Dashboard/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import CustomerDashboard from "./pages/Customer/CustomerDashboard";
-import ChatSupport from "./pages/Customer/ChatSupport";
 import CustomerContact from "./pages/Customer/Contact";
 import CustomerSetting from "./pages/Customer/Setting";
-import AllVehicles from "./pages/Customer/Allvehicle";
 import CustomerProfile from "./pages/Customer/CustomerProfile";
 import PersonalInfo from "./pages/Customer/PersonalInfo";
 import MyVehicles from "./pages/Customer/MyVehicles";
@@ -43,11 +40,8 @@ function App() {
           
           {/* Customer Dashboard Routes */}
           <Route path="/cus-dashboard" element={<CustomerDashboard />}/>
-          <Route path="/customer/chat-support" element={<ChatSupport />} />
           <Route path="/customer/contact" element={<CustomerContact />} />
           <Route path="/customer/settings" element={<CustomerSetting />} />
-          <Route path="/customer/vehicles" element={<AllVehicles />} />
-            
 
           {/* Employee Dashboard with nested routes */}
           <Route path="/employee" element={<EmployeeLayout />}>
@@ -56,16 +50,7 @@ function App() {
             <Route path="current-tasks" element={<CurrentTasks />} />
             <Route path="completed" element={<Completed />} />
           </Route>
-          
-          {/* Protected Dashboard Route */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
+  
           
           {/* Customer Profile Routes */}
           <Route

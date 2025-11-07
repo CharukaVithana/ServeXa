@@ -180,11 +180,13 @@ const CustomerDashboard: React.FC = () => {
                 >
                   Book New Service
                 </button>
-                <button className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
-                  View All Vehicles
+                <button 
+                 onClick={() => navigate("/profile/my-vehicles")}
+                 className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
+                 View All Vehicles
                 </button>
                 <button
-                  onClick={() => navigate("/customer/chat-support")}
+                  onClick={() => navigate("/chatbot")}
                   className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded"
                 >
                   Chat with Support

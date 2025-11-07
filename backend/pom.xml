@@ -5,12 +5,12 @@
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.1.4</version>
-        <relativePath/>
-    </parent>
+<parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.1.8</version>
+</parent>
+
 
     <groupId>com.servexa</groupId>
     <artifactId>servexa-backend</artifactId>
@@ -20,12 +20,12 @@
     <name>ServeXa Backend</name>
     <description>Automobile Service Management System - Backend Microservices</description>
 
-    <modules>
-        <module>common-libs</module>
-        <module>authentication-service</module>
-        <!-- <module>user-service</module> -->
-        <!-- <module>api-gateway</module> -->
-    </modules>
+  <modules>
+    <module>common-libs</module>
+    <module>authentication-service</module>
+    <module>customer-service</module>
+</modules>
+
 
     <properties>
         <java.version>17</java.version>

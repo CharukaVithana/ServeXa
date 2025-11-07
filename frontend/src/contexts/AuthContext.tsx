@@ -101,47 +101,50 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [getCustomerId, fetchVehicles]);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
-    try {
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
-      const response = await authService.login(credentials);
-      
-      authService.setStoredToken(response.accessToken);
-      
-      const user: User = {
-        id: response.userId,
-        email: response.email,
-        fullName: response.fullName,
-        role: response.role.toLowerCase() as "customer" | "employee" | "admin",
-        vehicles: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      
-      setState({
-        user,
-        isAuthenticated: true,
-        isLoading: false,
-        error: null,
-      });
-      
-      // Fetch vehicles for the customer
-      if (user.role === 'customer') {
-        const customerId = await getCustomerId(user.email, user.id);
-        if (customerId) {
-          await fetchVehicles(customerId);
+      try {
+        setState(prev => ({ ...prev, isLoading: true, error: null }));
+        const response = await authService.login(credentials);
+
+        authService.setStoredToken(response.accessToken);
+
+        const user: User = {
+          id: response.userId,
+          email: response.email,
+          fullName: response.fullName,
+          role: response.role.toLowerCase() as "customer" | "employee" | "admin",
+          vehicles: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+
+        setState({
+          user,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+        });
+
+        // Fetch vehicles if customer
+        if (user.role === "customer") {
+          const customerId = await getCustomerId(user.email, user.id);
+          if (customerId) await fetchVehicles(customerId);
         }
+
+        // ✅ Redirect based on role
+        if (user.role === "customer") navigate("/cus-dashboard");
+        else if (user.role === "employee") navigate("/employee");
+        else if (user.role === "admin") navigate("/admin/dashboard");
+      } catch (error) {
+        setState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: error instanceof Error ? error.message : "Login failed",
+        }));
+        throw error;
       }
-      
-      navigate('/dashboard');
-    } catch (error) {
-      setState(prev => ({
-        ...prev,
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Login failed',
-      }));
-      throw error;
-    }
-  }, [navigate, getCustomerId, fetchVehicles]);
+    },
+    [navigate, getCustomerId, fetchVehicles]
+  );
 
   const signup = useCallback(async (data: SignupData) => {
     try {
@@ -190,7 +193,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         error: null,
       });
       
-      navigate('/login');
+      navigate('/');
     } catch (error) {
       // Even if logout fails, we still clear local state
       setState({
