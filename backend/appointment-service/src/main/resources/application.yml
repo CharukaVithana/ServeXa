@@ -43,3 +43,6 @@ management:
     web:
       exposure:
         include: health,info,metrics
+
+jwt:
+  secret: ${JWT_SECRET:MySecretKeyForServeXaApplicationThatIsAtLeast256BitsLong123456}

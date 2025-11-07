@@ -23,7 +23,7 @@ public class AppointmentRequest {
     private String fullName;
     
     @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^\\(\\d{3}\\)\\s\\d{3}-\\d{4}$", message = "Phone number must be in format (XXX) XXX-XXXX")
+    @Pattern(regexp = "^[0-9+\\-\\s\\(\\)]+$", message = "Phone number must contain only digits, spaces, parentheses, plus sign, and hyphens")
     private String phoneNumber;
     
     @NotBlank(message = "Vehicle type is required")

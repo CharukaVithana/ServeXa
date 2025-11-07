@@ -124,7 +124,7 @@ class AppointmentIntegrationTest {
         assertThat(updatedAppointment).isNotNull();
         assertThat(updatedAppointment.getStatus()).isEqualTo("IN_PROGRESS");
         assertThat(updatedAppointment.getIsAssigned()).isTrue();
-        assertThat(updatedAppointment.getAssignedEmployeeId()).isEqualTo(10L);
+        assertThat(updatedAppointment.getAssignedEmployeeId()).isEqualTo("10");
     }
 
     @Test
@@ -197,7 +197,7 @@ class AppointmentIntegrationTest {
                         .paymentMethod("Card at Service Center")
                         .status("IN_PROGRESS")
                         .isAssigned(true)
-                        .assignedEmployeeId(10L)
+                        .assignedEmployeeId("10")
                         .duration(120)
                         .build()
         );

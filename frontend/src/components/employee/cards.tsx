@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from "react";
+import employeeService from "../../services/employeeService";
 
 interface StatusCard {
   title: string;
@@ -6,12 +7,43 @@ interface StatusCard {
 }
 
 const StatusCards: React.FC = () => {
-  const cards: StatusCard[] = [
-    { title: 'Appointed', count: 5 },
-    { title: 'Completed', count: 12 },
-    { title: 'In progress', count: 3 },
-    { title: 'Logged Today', count: 8 }
-  ];
+  const [cards, setCards] = useState<StatusCard[]>([
+    { title: "Assigned", count: 0 },
+    { title: "In Progress", count: 0 },
+    { title: "Completed", count: 0 },
+    { title: "Cancelled", count: 0 },
+  ]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTaskStatistics();
+  }, []);
+
+  const fetchTaskStatistics = async () => {
+    setLoading(true);
+    try {
+      // Fetch all tasks to calculate statistics
+      const [pendingTasks, ongoingTasks, completedTasks, rejectedTasks] =
+        await Promise.all([
+          employeeService.getMyTasksByStatus("ASSIGNED"),
+          employeeService.getMyTasksByStatus("ONGOING"),
+          employeeService.getMyTasksByStatus("COMPLETED"),
+          employeeService.getRejectedTasks(),
+        ]);
+
+      setCards([
+        { title: "Assigned", count: pendingTasks.length },
+        { title: "In Progress", count: ongoingTasks.length },
+        { title: "Completed", count: completedTasks.length },
+        { title: "Cancelled", count: rejectedTasks.length },
+      ]);
+    } catch (error) {
+      console.error("Error fetching task statistics:", error);
+      // Keep default values on error
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="w-full bg-gray-100 py-8">
@@ -26,11 +58,15 @@ const StatusCards: React.FC = () => {
                 <span className="text-sm font-medium mb-2 text-gray-300">
                   {card.title}
                 </span>
-                <span className="text-3xl font-bold text-white">
-                  {card.count}{card.title === 'Efficiency' ? '%' : ''}
-                </span>
+                {loading ? (
+                  <div className="h-9 w-16 bg-gray-600 rounded animate-pulse"></div>
+                ) : (
+                  <span className="text-3xl font-bold text-white">
+                    {card.count}
+                  </span>
+                )}
               </div>
-              
+
               {/* Three dots menu */}
               <div className="flex justify-end mt-2">
                 <button className="flex flex-col gap-0.5 p-1 rounded hover:bg-gray-600 transition-colors text-gray-500">

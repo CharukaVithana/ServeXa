@@ -11,13 +11,13 @@ interface EditVehicleModalProps {
   vehicle: Vehicle | null;
 }
 
-const FormInput = ({ label, name, placeholder, value, onChange, error, required = false }: any) => (
+const FormInput = ({ label, name, placeholder, value, onChange, error, required = false, type = 'text' }: any) => (
   <div>
     <label htmlFor={name} className="block text-sm font-medium text-gray-700">
       {label} {required && <span className="text-red-500">*</span>}
     </label>
     <input
-      type="text" id={name} name={name} placeholder={placeholder} value={value} onChange={onChange}
+      type={type} id={name} name={name} placeholder={placeholder} value={value} onChange={onChange}
       className={`mt-1 block w-full px-3 py-2 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500`}
     />
     {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
@@ -36,7 +36,7 @@ const EditVehicleModal: React.FC<EditVehicleModalProps> = ({ isOpen, onClose, on
     resetForm,
   } = useForm<Omit<Vehicle, 'id'>>({
     initialValues: {
-      registrationNumber: '', model: '', year: '', color: '', imageUrl: '',
+      registrationNumber: '', make: '', model: '', year: '', color: '', imageUrl: '',
     },
     validate: (values) => validateForm(values, authValidation.vehicle),
     onSubmit: async (formValues) => {
@@ -50,6 +50,7 @@ const EditVehicleModal: React.FC<EditVehicleModalProps> = ({ isOpen, onClose, on
     if (vehicle) {
       resetForm({
         registrationNumber: vehicle.registrationNumber,
+        make: vehicle.make || '',
         model: vehicle.model,
         year: vehicle.year,
         color: vehicle.color || '',
@@ -83,9 +84,10 @@ const EditVehicleModal: React.FC<EditVehicleModalProps> = ({ isOpen, onClose, on
         <form onSubmit={handleSubmit} noValidate>
           <div className="p-6 space-y-4">
             <FormInput label="Registration Number" name="registrationNumber" value={values.registrationNumber} onChange={handleChange} error={errors.registrationNumber} required />
-            <FormInput label="Model" name="model" value={values.model} onChange={handleChange} error={errors.model} required />
-            <FormInput label="Year" name="year" value={values.year} onChange={handleChange} error={errors.year} required />
-            <FormInput label="Color" name="color" value={values.color} onChange={handleChange} error={errors.color} />
+            <FormInput label="Manufacturer" name="make" placeholder="e.g., Toyota, Honda" value={values.make} onChange={handleChange} error={errors.make} required />
+            <FormInput label="Model" name="model" placeholder="e.g., Camry, Civic" value={values.model} onChange={handleChange} error={errors.model} required />
+            <FormInput label="Year" name="year" placeholder="e.g., 2024" value={values.year} onChange={handleChange} error={errors.year} required type="number" />
+            <FormInput label="Color" name="color" placeholder="e.g., White" value={values.color} onChange={handleChange} error={errors.color} />
             <div>
               <label className="block text-sm font-medium text-gray-700">Vehicle Image</label>
               <div className="mt-1 flex items-center justify-center p-6 border-2 border-gray-300 border-dashed rounded-md">

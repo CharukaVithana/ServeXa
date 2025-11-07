@@ -139,16 +139,16 @@ class AppointmentControllerTest {
 
     @Test
     void getEmployeeAppointments_Success() throws Exception {
-        appointmentResponse.setAssignedEmployeeId(10L);
+        appointmentResponse.setAssignedEmployeeId("10");
         appointmentResponse.setIsAssigned(true);
         List<AppointmentResponse> appointments = Arrays.asList(appointmentResponse);
-        when(appointmentService.getAppointmentsByEmployeeId(10L)).thenReturn(appointments);
+        when(appointmentService.getAppointmentsByEmployeeId("10")).thenReturn(appointments);
 
         mockMvc.perform(get("/api/appointments/employee/10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data", hasSize(1)))
-                .andExpect(jsonPath("$.data[0].assignedEmployeeId").value(10L));
+                .andExpect(jsonPath("$.data[0].assignedEmployeeId").value("10"));
     }
 
     @Test
@@ -179,16 +179,16 @@ class AppointmentControllerTest {
 
     @Test
     void assignEmployee_Success() throws Exception {
-        appointmentResponse.setAssignedEmployeeId(10L);
+        appointmentResponse.setAssignedEmployeeId("10");
         appointmentResponse.setIsAssigned(true);
-        when(appointmentService.assignEmployee("test-uuid-1", 10L)).thenReturn(appointmentResponse);
+        when(appointmentService.assignEmployee("test-uuid-1", "10")).thenReturn(appointmentResponse);
 
         mockMvc.perform(put("/api/appointments/test-uuid-1/assign")
                         .param("employeeId", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Employee assigned successfully"))
-                .andExpect(jsonPath("$.data.assignedEmployeeId").value(10L))
+                .andExpect(jsonPath("$.data.assignedEmployeeId").value("10"))
                 .andExpect(jsonPath("$.data.isAssigned").value(true));
     }
 }

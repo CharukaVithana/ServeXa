@@ -48,3 +48,7 @@ logging:
     org.springframework.security: DEBUG
     org.springframework.web: DEBUG
     com.servexa.common: DEBUG
+
+services:
+  customer-service:
+    url: http://customer-service:8082

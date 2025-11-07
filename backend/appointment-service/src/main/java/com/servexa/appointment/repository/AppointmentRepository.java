@@ -11,9 +11,11 @@ public interface AppointmentRepository extends JpaRepository<Appointment, String
     
     List<Appointment> findByCustomerId(Long customerId);
     
-    List<Appointment> findByAssignedEmployeeId(Long employeeId);
+    List<Appointment> findByAssignedEmployeeId(String employeeId);
     
     List<Appointment> findByStatus(String status);
     
     List<Appointment> findByIsAssigned(Boolean isAssigned);
+    
+    List<Appointment> findByIsAssignedFalse();
 }

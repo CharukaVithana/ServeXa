@@ -26,20 +26,27 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
   const menus = {
     customer: [
       { name: "Dashboard", icon: LayoutDashboard, path: "/cus-dashboard" },
-      { name: "Appointment", icon: Calendar, path: "appointments" },
+      {
+        name: "Appointment",
+        icon: Calendar,
+        path: "/cus-dashboard/appointments",
+      },
       { name: "Contact", icon: Phone, path: "/customer/contact" },
       { name: "Profile", icon: User, path: "/profile" },
       { name: "Settings", icon: Settings, path: "/customer/settings" },
     ],
     employee: [
-      { name: "Dashboard", icon: LayoutDashboard, path: "/employee/dashboard" },
-      { name: "Work Orders", icon: ClipboardList, path: "/employee/orders" },
-      { name: "Tasks", icon: Wrench, path: "/employee/tasks" },
-      { name: "Contact", icon: Phone, path: "/employee/contact" },
-      { name: "Settings", icon: Settings, path: "/employee/settings" },
+      {
+        name: "Assigned Tasks",
+        icon: ClipboardList,
+        path: "/employee/pending-tasks",
+      },
+      { name: "Ongoing Tasks", icon: Wrench, path: "/employee/current-tasks" },
+      { name: "Completed", icon: LayoutDashboard, path: "/employee/completed" },
+      { name: "Cancelled", icon: User, path: "/employee/rejected" },
     ],
     admin: [
-      { name: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
+      { name: "Dashboard", icon: LayoutDashboard, path: "/admin-dashboard" },
       { name: "Users", icon: Users, path: "/admin/users" },
       { name: "Reports", icon: BarChart, path: "/admin/reports" },
       { name: "Appointments", icon: Calendar, path: "/admin/appointments" },

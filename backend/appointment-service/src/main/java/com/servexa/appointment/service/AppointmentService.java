@@ -59,7 +59,7 @@ public class AppointmentService {
                 .collect(Collectors.toList());
     }
     
-    public List<AppointmentResponse> getAppointmentsByEmployeeId(Long employeeId) {
+    public List<AppointmentResponse> getAppointmentsByEmployeeId(String employeeId) {
         log.info("Fetching appointments for employee ID: {}", employeeId);
         return appointmentRepository.findByAssignedEmployeeId(employeeId)
                 .stream()
@@ -86,16 +86,33 @@ public class AppointmentService {
         return mapToResponse(appointment);
     }
     
-    public AppointmentResponse assignEmployee(String appointmentId, Long employeeId) {
+    public AppointmentResponse assignEmployee(String appointmentId, String employeeId) {
         log.info("Assigning employee {} to appointment {}", employeeId, appointmentId);
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with ID: " + appointmentId));
         
         appointment.setAssignedEmployeeId(employeeId);
         appointment.setIsAssigned(true);
+        appointment.setStatus("ASSIGNED");
         appointment = appointmentRepository.save(appointment);
         
         return mapToResponse(appointment);
+    }
+    
+    public List<AppointmentResponse> getAllAppointments() {
+        log.info("Fetching all appointments");
+        List<Appointment> appointments = appointmentRepository.findAll();
+        return appointments.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+    
+    public List<AppointmentResponse> getAppointmentsByStatus(String status) {
+        log.info("Fetching appointments with status: {}", status);
+        List<Appointment> appointments = appointmentRepository.findByStatus(status);
+        return appointments.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
     
     private AppointmentResponse mapToResponse(Appointment appointment) {

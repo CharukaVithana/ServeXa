@@ -17,7 +17,6 @@ import java.util.List;
 @RequestMapping("/api/appointments")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = "*")
 public class AppointmentController {
     
     private final AppointmentService appointmentService;
@@ -46,6 +45,23 @@ public class AppointmentController {
                 .build());
     }
     
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<AppointmentResponse>>> getAllAppointments(
+            @RequestParam(required = false) String status) {
+        List<AppointmentResponse> appointments;
+        
+        if (status != null && !status.isEmpty() && !status.equals("ALL")) {
+            appointments = appointmentService.getAppointmentsByStatus(status);
+        } else {
+            appointments = appointmentService.getAllAppointments();
+        }
+        
+        return ResponseEntity.ok(ApiResponse.<List<AppointmentResponse>>builder()
+                .success(true)
+                .data(appointments)
+                .build());
+    }
+    
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<ApiResponse<List<AppointmentResponse>>> getCustomerAppointments(
             @PathVariable Long customerId) {
@@ -59,7 +75,7 @@ public class AppointmentController {
     
     @GetMapping("/employee/{employeeId}")
     public ResponseEntity<ApiResponse<List<AppointmentResponse>>> getEmployeeAppointments(
-            @PathVariable Long employeeId) {
+            @PathVariable String employeeId) {
         List<AppointmentResponse> appointments = appointmentService.getAppointmentsByEmployeeId(employeeId);
         
         return ResponseEntity.ok(ApiResponse.<List<AppointmentResponse>>builder()
@@ -94,13 +110,22 @@ public class AppointmentController {
     @PutMapping("/{id}/assign")
     public ResponseEntity<ApiResponse<AppointmentResponse>> assignEmployee(
             @PathVariable String id,
-            @RequestParam Long employeeId) {
+            @RequestParam String employeeId) {
         AppointmentResponse response = appointmentService.assignEmployee(id, employeeId);
         
         return ResponseEntity.ok(ApiResponse.<AppointmentResponse>builder()
                 .success(true)
                 .message("Employee assigned successfully")
                 .data(response)
+                .build());
+    }
+    
+    @GetMapping("/health")
+    public ResponseEntity<ApiResponse<String>> health() {
+        return ResponseEntity.ok(ApiResponse.<String>builder()
+                .success(true)
+                .message("Appointment service is healthy")
+                .data("OK")
                 .build());
     }
 }

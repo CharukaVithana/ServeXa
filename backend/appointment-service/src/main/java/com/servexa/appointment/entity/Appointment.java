@@ -48,7 +48,7 @@ public class Appointment extends BaseEntity {
     private Boolean isAssigned = false;
 
     @Column
-    private Long assignedEmployeeId;
+    private String assignedEmployeeId;
 
     @Column(nullable = false)
     private Integer duration;
