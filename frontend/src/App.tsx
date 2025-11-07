@@ -19,12 +19,14 @@ import ServiceHistory from "./pages/Customer/ServiceHistory";
 import Appointments from "./pages/Customer/Appointments";
 import Notifications from "./pages/Customer/Notifications";
 import { Toaster } from "react-hot-toast";
+import Chatbot from "./components/Chatbot";
 
 // Employee Dashboard Components
 import EmployeeLayout from './components/employee/EmployeeLayout';
 import CurrentTasks from './components/employee/CurrentTasks';
 import PendingTasks from './components/employee/PendingTasks';
 import Completed from './components/employee/Completed';
+
 
 function App() {
   return (
@@ -48,6 +50,8 @@ function App() {
           <Route path="/customer/settings" element={<CustomerSetting />} />
           <Route path="/customer/vehicles" element={<AllVehicles />} />
             
+          {/*chatbot Route */}  
+          <Route path="/chatbot" element={<Chatbot />} />
 
           {/* Employee Dashboard with nested routes */}
           <Route path="/employee" element={<EmployeeLayout />}>
