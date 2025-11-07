@@ -40,7 +40,7 @@ const Login = () => {
         localStorage.setItem('user', JSON.stringify(response));
 
         // 4️⃣ Redirect to dashboard or home
-        window.location.href = '/dashboard'; // Change this route to match your app
+        window.location.href = '/cus-dashboard'; // Change this route to match your app
 
       } catch (error) {
         setServerError(error instanceof Error ? error.message : "Login failed");
