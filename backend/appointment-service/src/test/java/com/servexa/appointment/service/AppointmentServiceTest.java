@@ -37,7 +37,7 @@ class AppointmentServiceTest {
     @BeforeEach
     void setUp() {
         appointmentRequest = AppointmentRequest.builder()
-                .customerId(1L)
+                .customerId("uuid-customer-123")
                 .fullName("John Doe")
                 .phoneNumber("(555) 123-4567")
                 .vehicleType("Toyota Corolla 2020")
@@ -49,7 +49,7 @@ class AppointmentServiceTest {
                 .build();
 
         appointment = Appointment.builder()
-                .customerId(1L)
+                .customerId("uuid-customer-123")
                 .fullName("John Doe")
                 .phoneNumber("(555) 123-4567")
                 .vehicleType("Toyota Corolla 2020")
@@ -106,13 +106,13 @@ class AppointmentServiceTest {
     void getAppointmentsByCustomerId_Success() {
         appointment.setId("test-id-1");
         List<Appointment> appointments = Arrays.asList(appointment);
-        when(appointmentRepository.findByCustomerId(1L)).thenReturn(appointments);
+        when(appointmentRepository.findByCustomerId("uuid-customer-123")).thenReturn(appointments);
 
-        List<AppointmentResponse> responses = appointmentService.getAppointmentsByCustomerId(1L);
+        List<AppointmentResponse> responses = appointmentService.getAppointmentsByCustomerId("uuid-customer-123");
 
         assertThat(responses).hasSize(1);
-        assertThat(responses.get(0).getCustomerId()).isEqualTo(1L);
-        verify(appointmentRepository, times(1)).findByCustomerId(1L);
+        assertThat(responses.get(0).getCustomerId()).isEqualTo("uuid-customer-123");
+        verify(appointmentRepository, times(1)).findByCustomerId("uuid-customer-123");
     }
 
     @Test

@@ -1,0 +1,235 @@
+# Default values for servexa.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Global settings
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+
+# Namespace
+namespace:
+  create: true
+  name: servexa
+
+# Database configuration
+postgres:
+  enabled: true
+  image:
+    repository: postgres
+    tag: 15-alpine
+    pullPolicy: IfNotPresent
+
+  auth:
+    database: postgres
+    username: postgres
+    password: password
+
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: ""
+
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 250m
+    limits:
+      memory: 512Mi
+      cpu: 500m
+
+# Redis configuration
+redis:
+  enabled: true
+  image:
+    repository: redis
+    tag: 7-alpine
+    pullPolicy: IfNotPresent
+
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 100m
+    limits:
+      memory: 256Mi
+      cpu: 200m
+
+# Auth Service configuration
+authService:
+  enabled: true
+  image:
+    repository: servexa/auth-service
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  replicaCount: 2
+
+  service:
+    type: ClusterIP
+    port: 8081
+
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 250m
+    limits:
+      memory: 1Gi
+      cpu: 500m
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+
+# Customer Service configuration
+customerService:
+  enabled: true
+  image:
+    repository: servexa/customer-service
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  replicaCount: 2
+
+  service:
+    type: ClusterIP
+    port: 8082
+
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 250m
+    limits:
+      memory: 1Gi
+      cpu: 500m
+
+# Appointment Service configuration
+appointmentService:
+  enabled: true
+  image:
+    repository: servexa/appointment-service
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  replicaCount: 2
+
+  service:
+    type: ClusterIP
+    port: 8083
+
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 250m
+    limits:
+      memory: 1Gi
+      cpu: 500m
+
+# Vehicle Service configuration
+vehicleService:
+  enabled: true
+  image:
+    repository: servexa/vehicle-service
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  replicaCount: 2
+
+  service:
+    type: ClusterIP
+    port: 8084
+
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 250m
+    limits:
+      memory: 1Gi
+      cpu: 500m
+
+# Frontend configuration
+frontend:
+  enabled: true
+  image:
+    repository: servexa/frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  replicaCount: 3
+
+  service:
+    type: LoadBalancer
+    port: 80
+
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 100m
+    limits:
+      memory: 256Mi
+      cpu: 200m
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+  hosts:
+    - host: servexa.local
+      paths:
+        - path: /
+          pathType: Prefix
+          service: frontend
+        - path: /api/auth
+          pathType: Prefix
+          service: auth-service
+        - path: /api/customers
+          pathType: Prefix
+          service: customer-service
+        - path: /api/appointments
+          pathType: Prefix
+          service: appointment-service
+        - path: /api/vehicles
+          pathType: Prefix
+          service: vehicle-service
+  tls: []
+
+# Network Policies
+networkPolicy:
+  enabled: true
+
+# Security Context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 2000
+
+# Pod Security Context
+podSecurityContext:
+  fsGroup: 2000
+
+# Node Selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}
+
+# Environment-specific configurations
+environment:
+  name: production
+  springProfile: kubernetes

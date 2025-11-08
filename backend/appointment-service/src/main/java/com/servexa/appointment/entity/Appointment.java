@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class Appointment extends BaseEntity {
 
     @Column(nullable = false)
-    private Long customerId;
+    private String customerId;
 
     @Column(nullable = false)
     private String fullName;

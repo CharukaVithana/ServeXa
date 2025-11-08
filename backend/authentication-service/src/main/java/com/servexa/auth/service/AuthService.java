@@ -40,8 +40,8 @@ public class AuthService {
 
         try {
             // Determine user status based on role
-            UserStatus initialStatus = (request.getRole() == UserRole.ADMIN || request.getRole() == UserRole.EMPLOYEE) 
-                    ? UserStatus.PENDING 
+            UserStatus initialStatus = (request.getRole() == UserRole.ADMIN || request.getRole() == UserRole.EMPLOYEE)
+                    ? UserStatus.PENDING
                     : UserStatus.APPROVED;
 
             // Create new user
@@ -57,7 +57,8 @@ public class AuthService {
 
             // Save user
             user = userRepository.save(user);
-            log.info("User created with ID: {}, Email: {}, Status: {}", user.getId(), user.getEmail(), user.getStatus());
+            log.info("User created with ID: {}, Email: {}, Status: {}", user.getId(), user.getEmail(),
+                    user.getStatus());
 
             // For pending accounts, return a response without tokens
             if (user.getStatus() == UserStatus.PENDING) {
@@ -189,52 +190,52 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public AuthResponse getCurrentAuthenticatedUser(String token) {
-        log.info("Getting current authenticated user with token: {}", 
+        log.info("Getting current authenticated user with token: {}",
                 token != null ? token.substring(0, Math.min(token.length(), 30)) + "..." : "null");
-        
+
         if (token == null || !token.startsWith("Bearer ")) {
             log.error("Invalid authorization header format. Token: {}", token);
             return null;
         }
-        
+
         try {
             // Extract the actual token
             String jwtToken = token.substring(7);
             log.info("Extracted JWT token: {}", jwtToken.substring(0, Math.min(jwtToken.length(), 20)) + "...");
-            
+
             // Validate the token
             if (!jwtUtil.validateToken(jwtToken)) {
                 log.error("Token validation failed");
                 return null;
             }
-            
+
             log.info("Token validated successfully");
-            
+
             // Extract user ID from token
             String userId = jwtUtil.getUserIdFromToken(jwtToken);
             log.info("Extracted user ID from token: {}", userId);
-            
+
             // Find user in database
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> {
                         log.error("User not found with ID: {}", userId);
                         return new UnauthorizedException("User not found");
                     });
-            
+
             // Check if user is active
             if (!user.isActive()) {
                 log.warn("Inactive user attempted to access: {}", userId);
                 throw new UnauthorizedException("Account is deactivated");
             }
-            
+
             // Check user status
             if (user.getStatus() != UserStatus.APPROVED) {
                 log.warn("Non-approved user attempted to access: {}", userId);
                 throw new UnauthorizedException("Account is not approved");
             }
-            
+
             log.info("Successfully retrieved current user: {}", user.getEmail());
-            
+
             // Return the same response structure but without generating new tokens
             return AuthResponse.builder()
                     .userId(user.getId())
@@ -250,7 +251,7 @@ public class AuthService {
                     .refreshToken(user.getRefreshToken()) // Return stored refresh token
                     .expiresIn(jwtUtil.getExpirationFromToken(jwtToken)) // Get remaining time
                     .build();
-            
+
         } catch (UnauthorizedException e) {
             log.error("Authorization failed: {}", e.getMessage());
             throw e;
@@ -263,7 +264,7 @@ public class AuthService {
     @Transactional
     public AuthResponse updateProfile(String userId, UpdateProfileRequest request) {
         log.info("Updating profile for user: {}", userId);
-        
+
         try {
             // Find user in database
             User user = userRepository.findById(userId)
@@ -271,22 +272,22 @@ public class AuthService {
                         log.error("User not found with ID: {}", userId);
                         return new UnauthorizedException("User not found");
                     });
-            
+
             // Check if user is active
             if (!user.isActive()) {
                 log.warn("Inactive user attempted to update profile: {}", userId);
                 throw new UnauthorizedException("Account is deactivated");
             }
-            
+
             // Update user fields
             user.setFullName(request.getFullName());
             user.setPhoneNumber(request.getPhoneNumber());
             user.setAddress(request.getAddress());
-            
+
             // Save updated user
             User updatedUser = userRepository.save(user);
             log.info("Profile updated successfully for user: {}", user.getEmail());
-            
+
             // Return updated user data without generating new tokens
             return AuthResponse.builder()
                     .userId(updatedUser.getId())
@@ -299,7 +300,7 @@ public class AuthService {
                     .status(updatedUser.getStatus())
                     .isEmailVerified(updatedUser.isEmailVerified())
                     .build();
-            
+
         } catch (UnauthorizedException e) {
             log.error("Authorization failed during profile update: {}", e.getMessage());
             throw e;
@@ -363,5 +364,52 @@ public class AuthService {
                 .refreshToken(user.getRefreshToken())
                 .expiresIn(expiresIn)
                 .build();
+    }
+
+    @Transactional
+    public AuthResponse updateProfilePicture(String userId, String imageUrl) {
+        log.info("Updating profile picture for user: {}", userId);
+
+        try {
+            // Find user in database
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> {
+                        log.error("User not found with ID: {}", userId);
+                        return new UnauthorizedException("User not found");
+                    });
+
+            // Check if user is active
+            if (!user.isActive()) {
+                log.warn("Inactive user attempted to update profile picture: {}", userId);
+                throw new UnauthorizedException("Account is deactivated");
+            }
+
+            // Update user's profile picture
+            user.setImageUrl(imageUrl);
+
+            // Save updated user
+            User updatedUser = userRepository.save(user);
+            log.info("Profile picture updated successfully for user: {}", user.getEmail());
+
+            // Return updated user data without generating new tokens
+            return AuthResponse.builder()
+                    .userId(updatedUser.getId())
+                    .email(updatedUser.getEmail())
+                    .fullName(updatedUser.getFullName())
+                    .phoneNumber(updatedUser.getPhoneNumber())
+                    .address(updatedUser.getAddress())
+                    .imageUrl(updatedUser.getImageUrl())
+                    .role(updatedUser.getRole())
+                    .status(updatedUser.getStatus())
+                    .isEmailVerified(updatedUser.isEmailVerified())
+                    .build();
+
+        } catch (UnauthorizedException e) {
+            log.error("Authorization failed during profile picture update: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Error updating profile picture for user: {}", userId, e);
+            throw new RuntimeException("Failed to update profile picture: " + e.getMessage());
+        }
     }
 }

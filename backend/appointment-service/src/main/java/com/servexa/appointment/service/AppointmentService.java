@@ -18,12 +18,12 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional
 public class AppointmentService {
-    
+
     private final AppointmentRepository appointmentRepository;
-    
+
     public AppointmentResponse createAppointment(AppointmentRequest request) {
         log.info("Creating new appointment for customer: {}", request.getCustomerId());
-        
+
         Appointment appointment = Appointment.builder()
                 .customerId(request.getCustomerId())
                 .fullName(request.getFullName())
@@ -37,28 +37,28 @@ public class AppointmentService {
                 .isAssigned(false)
                 .duration(request.getDuration())
                 .build();
-        
+
         appointment = appointmentRepository.save(appointment);
         log.info("Appointment created successfully with ID: {}", appointment.getId());
-        
+
         return mapToResponse(appointment);
     }
-    
+
     public AppointmentResponse getAppointmentById(String id) {
         log.info("Fetching appointment with ID: {}", id);
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with ID: " + id));
         return mapToResponse(appointment);
     }
-    
-    public List<AppointmentResponse> getAppointmentsByCustomerId(Long customerId) {
+
+    public List<AppointmentResponse> getAppointmentsByCustomerId(String customerId) {
         log.info("Fetching appointments for customer ID: {}", customerId);
         return appointmentRepository.findByCustomerId(customerId)
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
-    
+
     public List<AppointmentResponse> getAppointmentsByEmployeeId(String employeeId) {
         log.info("Fetching appointments for employee ID: {}", employeeId);
         return appointmentRepository.findByAssignedEmployeeId(employeeId)
@@ -66,7 +66,7 @@ public class AppointmentService {
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
-    
+
     public List<AppointmentResponse> getUnassignedAppointments() {
         log.info("Fetching unassigned appointments");
         return appointmentRepository.findByIsAssigned(false)
@@ -74,31 +74,31 @@ public class AppointmentService {
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
-    
+
     public AppointmentResponse updateAppointmentStatus(String id, String status) {
         log.info("Updating appointment {} status to: {}", id, status);
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with ID: " + id));
-        
+
         appointment.setStatus(status);
         appointment = appointmentRepository.save(appointment);
-        
+
         return mapToResponse(appointment);
     }
-    
+
     public AppointmentResponse assignEmployee(String appointmentId, String employeeId) {
         log.info("Assigning employee {} to appointment {}", employeeId, appointmentId);
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with ID: " + appointmentId));
-        
+
         appointment.setAssignedEmployeeId(employeeId);
         appointment.setIsAssigned(true);
         appointment.setStatus("ASSIGNED");
         appointment = appointmentRepository.save(appointment);
-        
+
         return mapToResponse(appointment);
     }
-    
+
     public List<AppointmentResponse> getAllAppointments() {
         log.info("Fetching all appointments");
         List<Appointment> appointments = appointmentRepository.findAll();
@@ -106,7 +106,7 @@ public class AppointmentService {
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
-    
+
     public List<AppointmentResponse> getAppointmentsByStatus(String status) {
         log.info("Fetching appointments with status: {}", status);
         List<Appointment> appointments = appointmentRepository.findByStatus(status);
@@ -114,7 +114,7 @@ public class AppointmentService {
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
-    
+
     private AppointmentResponse mapToResponse(Appointment appointment) {
         return AppointmentResponse.builder()
                 .id(appointment.getId())

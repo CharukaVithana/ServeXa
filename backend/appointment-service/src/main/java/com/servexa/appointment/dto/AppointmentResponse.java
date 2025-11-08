@@ -12,9 +12,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class AppointmentResponse {
-    
+
     private String id;
-    private Long customerId;
+    private String customerId;
     private String fullName;
     private String phoneNumber;
     private String vehicleType;

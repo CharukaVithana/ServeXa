@@ -1,0 +1,22 @@
+apiVersion: v2
+name: servexa
+description: A Helm chart for ServeXa application
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+
+dependencies: []
+
+keywords:
+  - servexa
+  - microservices
+  - spring-boot
+  - react
+  - vehicle-service
+
+maintainers:
+  - name: ServeXa Team
+    email: team@servexa.com
+
+sources:
+  - https://github.com/CharukaVithana/ServeXa

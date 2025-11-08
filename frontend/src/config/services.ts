@@ -1,5 +1,6 @@
 // Service endpoints configuration
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost";
+// Using 127.0.0.1 instead of localhost to avoid IPv6 resolution issues with Docker on Windows
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1";
 
 export const SERVICE_ENDPOINTS = {
   // API Gateway (if using gateway pattern)

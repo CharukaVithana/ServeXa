@@ -6,6 +6,7 @@ import com.servexa.auth.dto.LoginRequest;
 import com.servexa.auth.dto.RefreshTokenRequest;
 import com.servexa.auth.dto.SignupRequest;
 import com.servexa.auth.dto.UpdateProfileRequest;
+import com.servexa.auth.dto.UpdateProfilePictureRequest;
 import com.servexa.auth.service.AuthService;
 import com.servexa.common.dto.ApiResponse;
 import com.servexa.common.exception.UnauthorizedException;
@@ -33,7 +34,7 @@ public class AuthController {
     private final AuthService authService;
     private final JwtUtil jwtUtil;
     private final RestTemplate restTemplate;
-    
+
     @Value("${services.customer-service.url}")
     private String customerServiceUrl;
 
@@ -125,33 +126,31 @@ public class AuthController {
 
     @GetMapping("/me")
     @Operation(summary = "Get current user")
-    public ResponseEntity<ApiResponse<AuthResponse>> getCurrentUser(@RequestHeader(value = "Authorization", required = false) String token) {
-        log.info("GET /me called with Authorization header: {}", token != null ? token.substring(0, Math.min(token.length(), 30)) + "..." : "null");
-        
+    public ResponseEntity<ApiResponse<AuthResponse>> getCurrentUser(
+            @RequestHeader(value = "Authorization", required = false) String token) {
+        log.info("GET /me called with Authorization header: {}",
+                token != null ? token.substring(0, Math.min(token.length(), 30)) + "..." : "null");
+
         try {
             AuthResponse user = authService.getCurrentAuthenticatedUser(token);
-            
+
             if (user == null) {
                 log.info("getCurrentAuthenticatedUser returned null");
                 return ResponseEntity.ok(
-                        ApiResponse.success(null, "No user authenticated")
-                );
+                        ApiResponse.success(null, "No user authenticated"));
             }
-            
+
             log.info("User retrieved successfully: {}", user.getEmail());
             return ResponseEntity.ok(
-                    ApiResponse.success(user, "User retrieved successfully")
-            );
+                    ApiResponse.success(user, "User retrieved successfully"));
         } catch (UnauthorizedException e) {
             log.error("Unauthorized exception in /me endpoint: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                    ApiResponse.<AuthResponse>error(e.getMessage())
-            );
+                    ApiResponse.<AuthResponse>error(e.getMessage()));
         } catch (Exception e) {
             log.error("Unexpected error in /me endpoint", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ApiResponse.<AuthResponse>error("Failed to retrieve user information")
-            );
+                    ApiResponse.<AuthResponse>error("Failed to retrieve user information"));
         }
     }
 
@@ -161,39 +160,75 @@ public class AuthController {
             @RequestHeader("Authorization") String token,
             @Valid @RequestBody UpdateProfileRequest request) {
         log.info("PUT /profile called");
-        
+
         try {
             // Extract user ID from token
             if (token == null || !token.startsWith("Bearer ")) {
                 throw new UnauthorizedException("Invalid authorization header");
             }
-            
+
             String jwtToken = token.substring(7);
             String userId = jwtUtil.getUserIdFromToken(jwtToken);
-            
+
             // Validate token
             if (!jwtUtil.validateToken(jwtToken)) {
                 throw new UnauthorizedException("Invalid or expired token");
             }
-            
+
             // Update profile
             AuthResponse updatedProfile = authService.updateProfile(userId, request);
-            
+
             return ResponseEntity.ok(
-                    ApiResponse.success(updatedProfile, "Profile updated successfully")
-            );
-            
+                    ApiResponse.success(updatedProfile, "Profile updated successfully"));
+
         } catch (UnauthorizedException e) {
             log.error("Unauthorized exception in /profile endpoint: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                    ApiResponse.<AuthResponse>error(e.getMessage())
-            );
+                    ApiResponse.<AuthResponse>error(e.getMessage()));
         } catch (Exception e) {
             log.error("Unexpected error in /profile endpoint", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ApiResponse.<AuthResponse>error("Failed to update profile")
-            );
+                    ApiResponse.<AuthResponse>error("Failed to update profile"));
         }
     }
 
+    @PutMapping("/users/{userId}/profile-picture")
+    @Operation(summary = "Update user profile picture")
+    public ResponseEntity<ApiResponse<AuthResponse>> updateProfilePicture(
+            @PathVariable String userId,
+            @RequestHeader("Authorization") String token,
+            @Valid @RequestBody UpdateProfilePictureRequest request) {
+        log.info("PUT /users/{}/profile-picture called", userId);
+
+        try {
+            if (token == null || !token.startsWith("Bearer ")) {
+                throw new UnauthorizedException("Invalid authorization header");
+            }
+
+            String jwtToken = token.substring(7);
+
+            if (!jwtUtil.validateToken(jwtToken)) {
+                throw new UnauthorizedException("Invalid or expired token");
+            }
+
+            String tokenUserId = jwtUtil.getUserIdFromToken(jwtToken);
+            if (!tokenUserId.equals(userId)) {
+                throw new UnauthorizedException("Cannot update another user's profile picture");
+            }
+
+            AuthResponse updatedProfile = authService.updateProfilePicture(userId, request.getImageUrl());
+
+            return ResponseEntity.ok(
+                    ApiResponse.success(updatedProfile, "Profile picture updated successfully"));
+
+        } catch (UnauthorizedException e) {
+            log.error("Unauthorized exception in /users/{}/profile-picture endpoint: {}", userId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    ApiResponse.<AuthResponse>error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Unexpected error in /users/{}/profile-picture endpoint", userId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ApiResponse.<AuthResponse>error("Failed to update profile picture"));
+        }
+    }
 }

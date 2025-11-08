@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # PostgreSQL Database
@@ -71,29 +71,6 @@ services:
       REDIS_HOST: redis
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
     restart: unless-stopped
-
-  # Customer Service
-  customer-service:
-    image: servexa/customer-service:latest
-    container_name: servexa-customer
-    build:
-      context: ./customer-service
-      dockerfile: Dockerfile
-    ports:
-      - "8082:8082"
-    depends_on:
-      - postgres
-      - redis
-      # - eureka-server
-    networks:
-      - servexa-network
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
-      DB_HOST: postgres
-      DB_USERNAME: postgres
-      DB_PASSWORD: password
-      REDIS_HOST: redis
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
 
   # Appointment Service
   appointment-service:
