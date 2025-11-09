@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { MessageCircle, X, Send } from "lucide-react";
 import type { KeyboardEvent } from "react";
+import { MessageCircle, X, Send } from "lucide-react";
 import chatbotIcon from "../assets/chatbotIcon.png";
+import { useAuth } from "../hooks/useAuth"; // import your auth hook
 
 interface Message {
   sender: "user" | "bot";
@@ -13,17 +14,19 @@ const API_BASE_URL =
   "http://127.0.0.1:8000";
 
 const Chatbot: React.FC = () => {
+  const { user } = useAuth(); // get logged-in user
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       sender: "bot",
-      text: "👋 Hi there! I’m Servexa AI — your personal automotive assistant. How can I help you today?",
+      text: "👋 Hi there! I’m Servexa AI — your personal assistant. How can I help you today?",
     },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  // Scroll to bottom on new message
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -31,6 +34,18 @@ const Chatbot: React.FC = () => {
   const handleSendMessage = async (message?: string) => {
     const userMessage = message?.trim() || input.trim();
     if (!userMessage) return;
+
+    // Instead of localStorage, use user.id from auth context
+    const customerId = user?.id;
+
+    // Only warn if user asks for personal info and is not logged in
+    if (!customerId && /my|me|my name|my car|my email/i.test(userMessage)) {
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", text: "⚠️ Please log in to access your personal information." },
+      ]);
+      return;
+    }
 
     setMessages((prev) => [...prev, { sender: "user", text: userMessage }]);
     setInput("");
@@ -40,8 +55,9 @@ const Chatbot: React.FC = () => {
       const res = await fetch(`${API_BASE_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: userMessage }),
+        body: JSON.stringify({ question: userMessage, customer_id: customerId }),
       });
+
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
@@ -65,7 +81,6 @@ const Chatbot: React.FC = () => {
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
-      {/* Floating button */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
@@ -75,10 +90,8 @@ const Chatbot: React.FC = () => {
         </button>
       )}
 
-      {/* Chat window */}
       {isOpen && (
-        <div className="w-[370px] h-[580px] bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200 animate-[slideUp_0.3s_ease-out]">
-          {/* Header */}
+        <div className="w-[370px] h-[580px] bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200">
           <div className="bg-gradient-to-r from-red-600 to-rose-500 text-white flex items-center justify-between px-4 py-3 shadow-md">
             <div className="flex items-center space-x-3">
               <img
@@ -91,15 +104,11 @@ const Chatbot: React.FC = () => {
                 <p className="text-xs text-gray-100">Always here to help 🚗</p>
               </div>
             </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="hover:text-gray-300 transition-transform transform hover:scale-110"
-            >
+            <button onClick={() => setIsOpen(false)} className="hover:text-gray-300 transition-transform transform hover:scale-110">
               <X size={20} />
             </button>
           </div>
 
-          {/* Chat messages */}
           <div className="flex-1 p-4 overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-100 space-y-3">
             {messages.map((msg, i) => (
               <div
@@ -109,7 +118,7 @@ const Chatbot: React.FC = () => {
                 }`}
               >
                 <div
-                  className={`px-4 py-2.5 rounded-2xl max-w-[80%] text-sm shadow-sm animate-[fadeIn_0.3s_ease-out] ${
+                  className={`px-4 py-2.5 rounded-2xl max-w-[80%] text-sm shadow-sm ${
                     msg.sender === "user"
                       ? "bg-gradient-to-r from-red-500 to-rose-500 text-white"
                       : "bg-white text-gray-800 border border-gray-200"
@@ -119,8 +128,6 @@ const Chatbot: React.FC = () => {
                 </div>
               </div>
             ))}
-
-            {/* Typing indicator */}
             {loading && (
               <div className="flex items-center space-x-1 text-gray-500 text-sm italic pl-2">
                 <div className="flex space-x-1">
@@ -131,11 +138,9 @@ const Chatbot: React.FC = () => {
                 <span>Assistant is typing...</span>
               </div>
             )}
-
             <div ref={chatEndRef} />
           </div>
 
-          {/* Input */}
           <div className="flex items-center border-t bg-white/90 px-3 py-2 shadow-inner">
             <input
               type="text"
