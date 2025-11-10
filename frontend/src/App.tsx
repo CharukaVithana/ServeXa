@@ -51,6 +51,17 @@ function App() {
           <Route path="/reset-password" element={<ResetPasswordRequest />} />
           <Route path="/reset-password/new" element={<ResetPasswordNew />} />
 
+
+          {/* Top-level Chatbot route */}
+            <Route
+              path="/chatbot"
+              element={
+                <RoleProtectedRoute allowedRoles={["customer"]}>
+                  <Chatbot />
+                </RoleProtectedRoute>
+              }
+            />
+  
           {/* Customer Dashboard Routes */}
           <Route
             path="/cus-dashboard"
@@ -185,6 +196,7 @@ function App() {
               </RoleProtectedRoute>
             }
           >
+            
             <Route index element={<Navigate to="personal-info" replace />} />
             <Route path="personal-info" element={<PersonalInfo />} />
             <Route path="my-vehicles" element={<MyVehicles />} />
