@@ -31,6 +31,7 @@ const Signup = () => {
       email: "",
       password: "",
       confirmPassword: "",
+      role: "CUSTOMER" as 'CUSTOMER' | 'EMPLOYEE' | 'ADMIN',
     },
     validate: (values) => {
       const baseErrors = validateForm(values, authValidation.signup);
@@ -70,10 +71,10 @@ const Signup = () => {
 
   return (
     <div className="flex min-h-screen">
-      <div className="w-2/3 flex flex-col justify-center items-center p-12 bg-white relative">
-        <h1 className="text-4xl font-bold mb-6">Welcome to ServeXa</h1>
-        <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-8">
-          <h2 className="text-2xl font-semibold mb-6 text-center">Create Account</h2>
+      <div className="w-full lg:w-2/3 flex flex-col justify-center items-center p-6 sm:p-8 md:p-12 bg-white">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-6 text-center">Welcome to ServeXa</h1>
+        <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-6 sm:p-8">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-center">Create Account</h2>
 
           {serverError && (
             <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -177,6 +178,28 @@ const Signup = () => {
               )}
             </div>
 
+            <div>
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
+                I'm signing up as:
+              </label>
+              <select
+                id="role"
+                name="role"
+                value={values.role}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#D72638]"
+              >
+                <option value="CUSTOMER">Customer - I need vehicle services</option>
+                <option value="EMPLOYEE">Employee - I work at ServeXa</option>
+                <option value="ADMIN">Admin - I manage ServeXa</option>
+              </select>
+              {values.role !== "CUSTOMER" && (
+                <p className="text-sm text-yellow-600 mt-2">
+                  ⚠️ {values.role === "EMPLOYEE" ? "Employee" : "Admin"} accounts require approval from an administrator
+                </p>
+              )}
+            </div>
+
             <button
               type="submit"
               disabled={isSubmitting}
@@ -197,13 +220,13 @@ const Signup = () => {
             </Link>
           </p>
 
-          <div className="flex items-center my-4">
+          {/* <div className="flex items-center my-4">
             <hr className="flex-grow border-gray-300" />
             <span className="mx-2 text-gray-400">OR</span>
             <hr className="flex-grow border-gray-300" />
-          </div>
+          </div> */}
 
-          <div className="flex gap-4 justify-center">
+          {/* <div className="flex gap-4 justify-center">
             <button 
               onClick={() => handleSocialSignup('google')}
               className="border border-gray-300 py-2 px-4 rounded flex items-center gap-2 hover:bg-gray-100"
@@ -218,11 +241,11 @@ const Signup = () => {
               <img src="/facebook.png" alt="Facebook" className="w-5 h-5" />
               Sign up with Facebook
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
 
-      <div className="w-1/3 h-screen relative">
+      <div className="hidden lg:block lg:w-1/3 h-64 lg:h-screen relative">
         <img src="/car2.jpg" alt="Car 2" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black bg-opacity-40" />
       </div>

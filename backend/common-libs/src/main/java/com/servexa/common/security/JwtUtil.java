@@ -3,6 +3,7 @@ package com.servexa.common.security;
 import com.servexa.common.enums.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -71,11 +72,11 @@ public class JwtUtil {
 
     private String createToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
-                .claims(claims)
-                .subject(subject)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(getSigningKey())
+                .setClaims(claims)
+                .setSubject(subject)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -94,5 +95,14 @@ public class JwtUtil {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public String getUserIdFromToken(String token) {
+        return extractUserId(token);
+    }
+
+    public Long getExpirationFromToken(String token) {
+        Date expiration = extractExpiration(token);
+        return expiration.getTime() - System.currentTimeMillis();
     }
 }

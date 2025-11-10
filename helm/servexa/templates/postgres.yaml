@@ -1,0 +1,164 @@
+{{- if .Values.postgres.enabled }}
+# PostgreSQL ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "servexa.fullname" . }}-postgres-config
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "servexa.labels" . | nindent 4 }}
+    app.kubernetes.io/component: database
+data:
+  POSTGRES_DB: {{ .Values.postgres.auth.database | quote }}
+  POSTGRES_USER: {{ .Values.postgres.auth.username | quote }}
+---
+# PostgreSQL Secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "servexa.fullname" . }}-postgres-secret
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "servexa.labels" . | nindent 4 }}
+    app.kubernetes.io/component: database
+type: Opaque
+data:
+  username: {{ .Values.postgres.auth.username | b64enc | quote }}
+  password: {{ .Values.postgres.auth.password | b64enc | quote }}
+---
+{{- if .Values.postgres.persistence.enabled }}
+# PostgreSQL PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "servexa.fullname" . }}-postgres-pvc
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "servexa.labels" . | nindent 4 }}
+    app.kubernetes.io/component: database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.postgres.persistence.size }}
+  {{- if .Values.postgres.persistence.storageClass }}
+  storageClassName: {{ .Values.postgres.persistence.storageClass }}
+  {{- end }}
+---
+{{- end }}
+# PostgreSQL Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "servexa.fullname" . }}-postgres
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "servexa.labels" . | nindent 4 }}
+    app.kubernetes.io/component: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+      {{- include "servexa.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: postgres
+        {{- include "servexa.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: database
+    spec:
+      {{- if .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: postgres
+        image: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
+        imagePullPolicy: {{ .Values.postgres.image.pullPolicy }}
+        ports:
+        - containerPort: 5432
+          name: postgresql
+        env:
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "servexa.fullname" . }}-postgres-config
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "servexa.fullname" . }}-postgres-config
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "servexa.fullname" . }}-postgres-secret
+              key: password
+        volumeMounts:
+        {{- if .Values.postgres.persistence.enabled }}
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        {{- end }}
+        resources:
+          {{- toYaml .Values.postgres.resources | nindent 10 }}
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - {{ .Values.postgres.auth.username }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - {{ .Values.postgres.auth.username }}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        {{- if .Values.securityContext }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        {{- end }}
+      volumes:
+      {{- if .Values.postgres.persistence.enabled }}
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: {{ include "servexa.fullname" . }}-postgres-pvc
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+# PostgreSQL Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "servexa.fullname" . }}-postgres
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "servexa.labels" . | nindent 4 }}
+    app.kubernetes.io/component: database
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: postgresql
+    protocol: TCP
+    name: postgresql
+  selector:
+    app: postgres
+    {{- include "servexa.selectorLabels" . | nindent 4 }}
+{{- end }}

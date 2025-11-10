@@ -1,22 +1,32 @@
 import type { Vehicle } from '../types/auth';
+import { SERVICE_ENDPOINTS, API_PATHS, getApiUrl } from '../config/services';
 
-const API_BASE_URL = import.meta.env.VITE_CUSTOMER_API_URL || 'http://localhost:8082/api';
+const API_BASE_URL = import.meta.env.VITE_VEHICLE_API_URL || SERVICE_ENDPOINTS.vehicle;
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message: string;
+  timestamp?: string;
+}
 
 interface VehicleResponse {
   id: number;
+  make: string;
   model: string;
   registrationNumber: string;
   imageUrl: string;
-  year?: string;
+  year?: number;
   color?: string;
   customerId: number;
 }
 
 interface VehicleRequest {
+  make: string;
   model: string;
   registrationNumber: string;
   imageUrl?: string;
-  year?: string;
+  year?: number;
   color?: string;
   customerId: number;
 }
@@ -27,7 +37,8 @@ class VehicleService {
       const error = await response.json().catch(() => ({ message: 'An error occurred' }));
       throw new Error(error.message || `HTTP error! status: ${response.status}`);
     }
-    return response.json();
+    const result = await response.json();
+    return result.data || result;
   }
 
   private getAuthHeaders() {
@@ -44,10 +55,11 @@ class VehicleService {
   private mapToVehicle(vehicle: VehicleResponse): Vehicle {
     return {
       id: vehicle.id.toString(),
+      make: vehicle.make || '',
       model: vehicle.model,
       registrationNumber: vehicle.registrationNumber,
       imageUrl: vehicle.imageUrl || '',
-      year: vehicle.year || '',
+      year: vehicle.year ? vehicle.year.toString() : '',
       color: vehicle.color || '',
     };
   }
@@ -57,10 +69,11 @@ class VehicleService {
    */
   private mapToRequest(vehicle: Omit<Vehicle, 'id'>, customerId: number): VehicleRequest {
     return {
+      make: vehicle.make,
       model: vehicle.model,
       registrationNumber: vehicle.registrationNumber,
       imageUrl: vehicle.imageUrl || undefined,
-      year: vehicle.year || undefined,
+      year: vehicle.year ? parseInt(vehicle.year, 10) : undefined,
       color: vehicle.color || undefined,
       customerId: customerId,
     };
@@ -71,7 +84,7 @@ class VehicleService {
    */
   async getVehiclesByCustomerId(customerId: number): Promise<Vehicle[]> {
     try {
-      const response = await fetch(`${API_BASE_URL}/vehicles/${customerId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/vehicles/customer/${customerId}`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
       });
@@ -98,7 +111,7 @@ class VehicleService {
     try {
       const request = this.mapToRequest(vehicleData, customerId);
       
-      const response = await fetch(`${API_BASE_URL}/vehicles`, {
+      const response = await fetch(`${API_BASE_URL}/api/vehicles`, {
         method: 'POST',
         headers: this.getAuthHeaders(),
         body: JSON.stringify(request),
@@ -119,7 +132,7 @@ class VehicleService {
     try {
       const request = this.mapToRequest(vehicleData, customerId);
       
-      const response = await fetch(`${API_BASE_URL}/vehicles/${vehicleId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}`, {
         method: 'PUT',
         headers: this.getAuthHeaders(),
         body: JSON.stringify(request),
@@ -136,9 +149,9 @@ class VehicleService {
   /**
    * Delete a vehicle
    */
-  async deleteVehicle(vehicleId: string): Promise<void> {
+  async deleteVehicle(vehicleId: string, customerId: number): Promise<void> {
     try {
-      const response = await fetch(`${API_BASE_URL}/vehicles/${vehicleId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}/customer/${customerId}`, {
         method: 'DELETE',
         headers: this.getAuthHeaders(),
       });

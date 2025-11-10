@@ -11,7 +11,7 @@ interface UseFormReturn<T> {
   values: T;
   errors: Partial<T>;
   isSubmitting: boolean;
-  handleChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  handleChange: (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
   setFieldValue: (field: keyof T, value: any) => void;
   setErrors: (errors: Partial<T>) => void;
@@ -27,8 +27,9 @@ export function useForm<T extends Record<string, any>>({
   const [errors, setErrors] = useState<Partial<T>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = useCallback((e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
     setValues(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,

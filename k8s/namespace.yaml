@@ -1,0 +1,8 @@
+# Namespace for ServeXa application
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: servexa
+  labels:
+    app: servexa
+    environment: production

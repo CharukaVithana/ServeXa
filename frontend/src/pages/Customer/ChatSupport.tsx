@@ -21,7 +21,7 @@ const ChatSupport: React.FC = () => {
 
     try {
       // Call your backend AI endpoint (or directly OpenAI API)
-      const response = await fetch("http://localhost:5000/api/chatbot", {
+      const response = await fetch("http://127.0.0.1:5000/api/chatbot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMessage }),
@@ -31,12 +31,18 @@ const ChatSupport: React.FC = () => {
 
       setMessages((prev) => [
         ...prev,
-        { sender: "support", text: data.reply || "Sorry, I didn't understand that." },
+        {
+          sender: "support",
+          text: data.reply || "Sorry, I didn't understand that.",
+        },
       ]);
     } catch (error) {
       setMessages((prev) => [
         ...prev,
-        { sender: "support", text: "⚠️ There was a problem connecting to the support server." },
+        {
+          sender: "support",
+          text: "⚠️ There was a problem connecting to the support server.",
+        },
       ]);
     } finally {
       setLoading(false);
@@ -55,9 +61,14 @@ const ChatSupport: React.FC = () => {
         {/* Header */}
         <div className="bg-white border-b p-4 flex items-center gap-3 shadow-sm">
           <button onClick={() => navigate("/cus-dashboard")}>
-            <ArrowLeft size={22} className="text-gray-700 hover:text-gray-900" />
+            <ArrowLeft
+              size={22}
+              className="text-gray-700 hover:text-gray-900"
+            />
           </button>
-          <h2 className="font-semibold text-lg text-gray-800">Chat with Support</h2>
+          <h2 className="font-semibold text-lg text-gray-800">
+            Chat with Support
+          </h2>
         </div>
 
         {/* Chat Messages */}

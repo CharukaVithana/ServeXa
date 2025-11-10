@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useForm } from '../../hooks/useForm';
 import { validateForm, authValidation } from '../../utils/validation';
+import authService from '../../services/authService';
+import Notification from '../../components/Notification';
 import type { User } from '../../types/auth';
 
 
@@ -51,6 +53,10 @@ const TextareaField = ({ label, name, value, onChange, error }: { label: string,
 const PersonalInfo = () => {
     const { user, updateUser } = useAuth(); 
     const [isEditing, setIsEditing] = useState(false);
+    const [notification, setNotification] = useState<{
+        type: 'success' | 'error' | 'warning' | 'info';
+        message: string;
+    } | null>(null);
 
     type FormValues = Pick<User, 'fullName' | 'email' | 'phoneNumber' | 'address'>;
 
@@ -75,10 +81,57 @@ const PersonalInfo = () => {
             address: authValidation.profile.address, // Add address validation
         }),
         onSubmit: async (formValues) => {
-            console.log('Submitting updated info:', formValues);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            updateUser(formValues);
-            setIsEditing(false);
+            try {
+                // Only send fields that can be updated (exclude email)
+                const updateData = {
+                    fullName: formValues.fullName,
+                    phoneNumber: formValues.phoneNumber || '',
+                    address: formValues.address || ''
+                };
+                
+                console.log('Submitting updated info:', updateData);
+                
+                // Call the API to update profile
+                const updatedUser = await authService.updateProfile(updateData);
+                
+                // Update the user in the auth context
+                updateUser({
+                    ...updatedUser,
+                    phoneNumber: updateData.phoneNumber,
+                    address: updateData.address
+                });
+                
+                setIsEditing(false);
+                setNotification({
+                    type: 'success',
+                    message: 'Your profile has been updated successfully!'
+                });
+            } catch (error: any) {
+                console.error('Failed to update profile:', error);
+                
+                // Parse error message
+                let errorMessage = 'Failed to update profile. Please try again.';
+                
+                if (error.message) {
+                    // Check for specific validation errors
+                    if (error.message.includes('phone number')) {
+                        errorMessage = 'Please enter a valid phone number (digits only, optionally starting with +)';
+                    } else if (error.message.includes('Full name')) {
+                        errorMessage = 'Full name must be between 2 and 100 characters';
+                    } else if (error.message.includes('Address')) {
+                        errorMessage = 'Address must not exceed 500 characters';
+                    } else if (error.message.includes('Validation Failed')) {
+                        errorMessage = 'Please check your input and try again';
+                    } else {
+                        errorMessage = error.message;
+                    }
+                }
+                
+                setNotification({
+                    type: 'error',
+                    message: errorMessage
+                });
+            }
         },
     });
 
@@ -100,6 +153,14 @@ const PersonalInfo = () => {
 
     return (
         <div>
+            {notification && (
+                <Notification
+                    type={notification.type}
+                    message={notification.message}
+                    onClose={() => setNotification(null)}
+                />
+            )}
+            
             <h2 className="text-xl font-bold text-gray-800 mb-6">Personal Information</h2>
             
             {!isEditing ? (
@@ -128,14 +189,16 @@ const PersonalInfo = () => {
                         onChange={handleChange}
                         error={errors.fullName}
                     />
-                    <InputField 
-                        label="Email Address" 
-                        name="email"
-                        type="email"
-                        value={values.email}
-                        onChange={handleChange}
-                        error={errors.email}
-                    />
+                    <div>
+                        <label className="text-sm font-medium text-gray-700">Email Address</label>
+                        <input
+                            type="email"
+                            value={values.email}
+                            disabled
+                            className="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm text-gray-500 cursor-not-allowed sm:text-sm"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
+                    </div>
                     <InputField 
                         label="Phone Number" 
                         name="phoneNumber"

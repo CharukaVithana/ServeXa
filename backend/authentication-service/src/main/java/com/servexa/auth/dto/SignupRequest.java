@@ -30,7 +30,6 @@ public class SignupRequest {
             message = "Password must contain at least one digit, one uppercase letter, one lowercase letter, one special character, and no whitespace")
     private String password;
 
-    @Pattern(regexp = "^[+]?[0-9]{10,15}$", message = "Phone number must be valid")
     private String phoneNumber;
 
     @Builder.Default

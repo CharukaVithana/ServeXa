@@ -11,13 +11,13 @@ interface AddVehicleModalProps {
 }
 
 // Reusable input field for the form
-const FormInput = ({ label, name, placeholder, value, onChange, error, required = false }: any) => (
+const FormInput = ({ label, name, placeholder, value, onChange, error, required = false, type = 'text' }: any) => (
   <div>
     <label htmlFor={name} className="block text-sm font-medium text-gray-700">
       {label} {required && <span className="text-red-500">*</span>}
     </label>
     <input
-      type="text"
+      type={type}
       id={name}
       name={name}
       placeholder={placeholder}
@@ -43,6 +43,7 @@ const AddVehicleModal: React.FC<AddVehicleModalProps> = ({ isOpen, onClose, onSa
   } = useForm<Omit<Vehicle, 'id'>>({
     initialValues: {
       registrationNumber: '',
+      make: '',
       model: '',
       year: '',
       color: '',
@@ -90,8 +91,9 @@ const AddVehicleModal: React.FC<AddVehicleModalProps> = ({ isOpen, onClose, onSa
         <form onSubmit={handleSubmit} noValidate>
           <div className="p-6 space-y-4">
             <FormInput label="Registration Number" name="registrationNumber" placeholder="e.g., BHG-654" value={values.registrationNumber} onChange={handleChange} error={errors.registrationNumber} required />
-            <FormInput label="Model" name="model" placeholder="e.g., BYD Seal" value={values.model} onChange={handleChange} error={errors.model} required />
-            <FormInput label="Year" name="year" placeholder="e.g., 2024" value={values.year} onChange={handleChange} error={errors.year} required />
+            <FormInput label="Manufacturer" name="make" placeholder="e.g., Toyota, Honda" value={values.make} onChange={handleChange} error={errors.make} required />
+            <FormInput label="Model" name="model" placeholder="e.g., Camry, Civic" value={values.model} onChange={handleChange} error={errors.model} required />
+            <FormInput label="Year" name="year" placeholder="e.g., 2024" value={values.year} onChange={handleChange} error={errors.year} required type="number" />
             <FormInput label="Color" name="color" placeholder="e.g., White" value={values.color} onChange={handleChange} error={errors.color} />
             
             {/* Image Upload */}

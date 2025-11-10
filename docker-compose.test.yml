@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  # Test Database
+  test-postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: testdb
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testuser"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    tmpfs:
+      - /var/lib/postgresql/data
+
+  # Test Redis
+  test-redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Tests
+  auth-service-test:
+    build:
+      context: ./backend/authentication-service
+      dockerfile: Dockerfile
+      target: test
+    depends_on:
+      test-postgres:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: test
+      DB_HOST: test-postgres
+      DB_PORT: 5432
+      DB_USERNAME: testuser
+      DB_PASSWORD: testpass
+      REDIS_HOST: test-redis
+      REDIS_PORT: 6379
+    command: mvn test
+
+  appointment-service-test:
+    build:
+      context: ./backend/appointment-service
+      dockerfile: Dockerfile
+      target: test
+    depends_on:
+      test-postgres:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: test
+      DB_HOST: test-postgres
+      DB_PORT: 5432
+      DB_USERNAME: testuser
+      DB_PASSWORD: testpass
+      REDIS_HOST: test-redis
+      REDIS_PORT: 6379
+    command: mvn test
+
+  vehicle-service-test:
+    build:
+      context: ./backend/vehicle-service
+      dockerfile: Dockerfile
+      target: test
+    depends_on:
+      test-postgres:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: test
+      DB_HOST: test-postgres
+      DB_PORT: 5432
+      DB_USERNAME: testuser
+      DB_PASSWORD: testpass
+      REDIS_HOST: test-redis
+      REDIS_PORT: 6379
+    command: mvn test
+
+  # Frontend Tests
+  frontend-test:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: test
+    command: npm test
+    environment:
+      CI: true
+
+networks:
+  default:
+    name: servexa-test-network

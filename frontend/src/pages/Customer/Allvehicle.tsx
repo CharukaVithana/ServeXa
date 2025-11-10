@@ -16,7 +16,7 @@ const AllVehicles: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/vehicles/my-vehicles", {
+    fetch("http://127.0.0.1:5000/api/vehicles/my-vehicles", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
@@ -58,7 +58,9 @@ const AllVehicles: React.FC = () => {
               {vehicles.map((v) => (
                 <tr key={v._id} className="border-t hover:bg-gray-50">
                   <td className="p-3">{v.registrationNumber}</td>
-                  <td className="p-3">{v.make} {v.model}</td>
+                  <td className="p-3">
+                    {v.make} {v.model}
+                  </td>
                   <td className="p-3">{v.lastServiceDate || "N/A"}</td>
                   <td className="p-3">
                     <span
@@ -73,7 +75,9 @@ const AllVehicles: React.FC = () => {
                       {v.status}
                     </span>
                   </td>
-                  <td className="p-3">{v.nextAppointment || "Not Scheduled"}</td>
+                  <td className="p-3">
+                    {v.nextAppointment || "Not Scheduled"}
+                  </td>
                   <td className="p-3">
                     <button className="text-blue-600 hover:underline">
                       View Details

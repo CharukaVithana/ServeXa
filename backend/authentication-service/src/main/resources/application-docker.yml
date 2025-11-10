@@ -1,0 +1,54 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/servexa_auth
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: 5
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: false
+  
+  redis:
+    host: redis
+    port: 6379
+    password: 
+    timeout: 60000
+  
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+
+  security:
+    jwt:
+      secret: ${JWT_SECRET:MySecretKeyForServeXaApplicationThatIsAtLeast256BitsLong123456}
+      expiration: ${JWT_EXPIRATION:86400000}
+
+eureka:
+  client:
+    enabled: false
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://eureka-server:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+    hostname: auth-service
+
+logging:
+  level:
+    com.servexa.auth: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    com.servexa.common: DEBUG
+
+services:
+  customer-service:
+    url: http://customer-service:8082

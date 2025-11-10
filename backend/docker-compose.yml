@@ -1,5 +1,4 @@
-cd configs:
-version: '3.8'
+version: "3.8"
 
 services:
   # PostgreSQL Database
@@ -9,13 +8,19 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: servexa_auth
+      POSTGRES_DB: postgres
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     networks:
       - servexa-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Redis Cache
   redis:
@@ -26,19 +31,19 @@ services:
     networks:
       - servexa-network
 
-  # Eureka Service Discovery
-  eureka-server:
-    image: servexa/eureka-server:latest
-    container_name: servexa-eureka
-    build:
-      context: ./eureka-server
-      dockerfile: Dockerfile
-    ports:
-      - "8761:8761"
-    networks:
-      - servexa-network
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
+  # Eureka Service Discovery (commented out for now)
+  # eureka-server:
+  #   image: servexa/eureka-server:latest
+  #   container_name: servexa-eureka
+  #   build:
+  #     context: ./eureka-server
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8761:8761"
+  #   networks:
+  #     - servexa-network
+  #   environment:
+  #     SPRING_PROFILES_ACTIVE: docker
 
   # Authentication Service
   auth-service:
@@ -50,9 +55,36 @@ services:
     ports:
       - "8081:8081"
     depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      # - eureka-server
+    networks:
+      - servexa-network
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+      REDIS_HOST: redis
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    restart: unless-stopped
+
+  # Appointment Service
+  appointment-service:
+    image: servexa/appointment-service:latest
+    container_name: servexa-appointment
+    build:
+      context: ./appointment-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    depends_on:
       - postgres
       - redis
-      - eureka-server
+      # - eureka-server
     networks:
       - servexa-network
     environment:
@@ -63,19 +95,19 @@ services:
       REDIS_HOST: redis
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
 
-  # Customer Service
-  customer-service:
-    image: servexa/customer-service:latest
-    container_name: servexa-customer
+  # Vehicle Service
+  vehicle-service:
+    image: servexa/vehicle-service:latest
+    container_name: servexa-vehicle
     build:
-      context: ./customer-service
+      context: ./vehicle-service
       dockerfile: Dockerfile
     ports:
-      - "8082:8082"
+      - "8084:8084"
     depends_on:
       - postgres
       - redis
-      - eureka-server
+      # - eureka-server
     networks:
       - servexa-network
     environment:
@@ -96,7 +128,7 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - eureka-server
+      # - eureka-server
       - auth-service
     networks:
       - servexa-network
@@ -109,6 +141,4 @@ volumes:
 
 networks:
   servexa-network:
-    driver: 
-    
- 
+    driver: bridge

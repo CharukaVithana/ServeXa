@@ -1,0 +1,65 @@
+# Docker Compose override for development
+# This file extends docker-compose.yml with development-specific configurations
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  # Development overrides for PostgreSQL
+  postgres:
+    environment:
+      POSTGRES_DB: servexa_dev
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./backend/docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"
+
+  # Development overrides for Redis
+  redis:
+    ports:
+      - "6379:6379"
+
+  # Development overrides for Auth Service
+  auth-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      LOGGING_LEVEL_COM_SERVEXA: DEBUG
+    volumes:
+      # Hot reload for development (if supported)
+      - ./backend/authentication-service/target/classes:/app/classes
+
+  # Development overrides for Appointment Service
+  appointment-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      LOGGING_LEVEL_COM_SERVEXA: DEBUG
+    volumes:
+      - ./backend/appointment-service/target/classes:/app/classes
+
+  # Development overrides for Vehicle Service
+  vehicle-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      LOGGING_LEVEL_COM_SERVEXA: DEBUG
+    volumes:
+      - ./backend/vehicle-service/target/classes:/app/classes
+
+  # Development overrides for Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev # If you have a dev-specific Dockerfile
+      target: development
+    environment:
+      NODE_ENV: development
+      VITE_API_BASE_URL: http://localhost:8080
+      # Enable hot reload and other dev features
+      CHOKIDAR_USEPOLLING: true
+    volumes:
+      # Mount source code for hot reload
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - /app/node_modules # Anonymous volume to prevent node_modules override
+
+volumes:
+  postgres_dev_data:
+    driver: local

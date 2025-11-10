@@ -1,12 +1,31 @@
 import type { LoginCredentials, SignupData, AuthResponse, ResetPasswordData, User } from '../types/auth';
+import { SERVICE_ENDPOINTS, API_PATHS, getApiUrl } from '../config/services';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api';
+// For backward compatibility, check if VITE_API_URL is set
+const API_BASE_URL = import.meta.env.VITE_API_URL || `${SERVICE_ENDPOINTS.auth}/api`;
 
 class AuthService {
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'An error occurred' }));
-      throw new Error(error.message || `HTTP error! status: ${response.status}`);
+      let errorMessage = 'An error occurred';
+      try {
+        const errorData = await response.json();
+        
+        // Handle validation errors
+        if (errorData.validationErrors) {
+          const errors = Object.entries(errorData.validationErrors)
+            .map(([field, message]) => `${field}: ${message}`)
+            .join(', ');
+          errorMessage = errors;
+        } else {
+          // Check for different error response formats
+          errorMessage = errorData.message || errorData.error || errorData.detail || `HTTP error! status: ${response.status}`;
+        }
+      } catch (e) {
+        // If response is not JSON, use status text
+        errorMessage = `HTTP error! status: ${response.status}`;
+      }
+      throw new Error(errorMessage);
     }
     return response.json();
   }
@@ -113,38 +132,89 @@ class AuthService {
   async getCurrentUser(): Promise<User | null> {
     try {
       const token = this.getStoredToken();
+      if (!token) {
+        return null;
+      }
+      
       const response = await fetch(`${API_BASE_URL}/auth/me`, {
         method: 'GET',
         credentials: 'include',
         headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
+          'Authorization': `Bearer ${token}`,
         },
       });
+      
       if (response.status === 401) {
+        this.removeStoredToken();
         return null;
       }
+            
       const result = await this.handleResponse<any>(response);
-      const data = result.data || null;
-      if (!data) return null;
-
-      // Map AuthResponse -> User
+      const authData = result.data;
+      
+      if (!authData || !authData.userId) {
+        return null;
+      }
+      
+      // Transform AuthResponse to User object
       const user: User = {
-        id: data.userId,
-        email: data.email,
-        fullName: data.fullName,
-        role: (data.role || 'CUSTOMER').toLowerCase() as any,
-        phoneNumber: data.phoneNumber || undefined,
-        address: data.address || undefined,
-        profilePictureUrl: data.profilePictureUrl || null,
-        vehicles: data.vehicles || [],
+        id: authData.userId,
+        email: authData.email,
+        fullName: authData.fullName,
+        phoneNumber: authData.phoneNumber || undefined,
+        address: authData.address || undefined,
+        profilePictureUrl: authData.imageUrl || undefined,
+        role: authData.role.toLowerCase() as "customer" | "employee" | "admin",
+        vehicles: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-
+      
+      // Update the stored token if a new one is provided
+      if (authData.accessToken) {
+        this.setStoredToken(authData.accessToken);
+      }
+      
       return user;
     } catch (error) {
+      console.error('Error getting current user:', error);
       return null;
     }
+  }
+
+  async updateProfile(profileData: { fullName: string; phoneNumber: string; address: string }): Promise<User> {
+    const token = this.getStoredToken();
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(profileData),
+    });
+
+    const result = await this.handleResponse<any>(response);
+    const authData = result.data;
+    
+    // Transform the response to User object
+    const user: User = {
+      id: authData.userId,
+      email: authData.email,
+      fullName: authData.fullName,
+      phoneNumber: authData.phoneNumber || undefined,
+      address: authData.address || undefined,
+      profilePictureUrl: authData.imageUrl || undefined,
+      role: authData.role.toLowerCase() as "customer" | "employee" | "admin",
+      vehicles: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    
+    return user;
   }
 
   async loginWithGoogle(): Promise<void> {

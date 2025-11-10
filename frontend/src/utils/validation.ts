@@ -47,6 +47,27 @@ export const validationRules = {
     },
     message,
   }),
+  number: (message = 'Must be a valid number'): ValidationRule => ({
+    validate: (value: string) => {
+      if (!value) return false;
+      return !isNaN(Number(value));
+    },
+    message,
+  }),
+  minValue: (min: number, message?: string): ValidationRule => ({
+    validate: (value: string | number) => {
+      const num = typeof value === 'string' ? Number(value) : value;
+      return !isNaN(num) && num >= min;
+    },
+    message: message || `Must be at least ${min}`,
+  }),
+  maxValue: (max: number, message?: string): ValidationRule => ({
+    validate: (value: string | number) => {
+      const num = typeof value === 'string' ? Number(value) : value;
+      return !isNaN(num) && num <= max;
+    },
+    message: message || `Must be no more than ${max}`,
+  }),
 };
 
 export function validateField(value: any, rules: ValidationRule[], allValues?: any): string | undefined {
@@ -138,13 +159,17 @@ export const authValidation = {
     registrationNumber: [
       validationRules.required('Registration number is required'),
     ],
+    make: [
+      validationRules.required('Make is required'),
+    ],
     model: [
       validationRules.required('Model is required'),
     ],
     year: [
       validationRules.required('Year is required'),
-      validationRules.minLength(4, 'Enter a valid year'),
-      validationRules.maxLength(4, 'Enter a valid year'),
+      validationRules.number('Year must be a valid number'),
+      validationRules.minValue(1900, 'Year must be after 1900'),
+      validationRules.maxValue(2100, 'Year must be before 2100'),
     ],
   },
 };

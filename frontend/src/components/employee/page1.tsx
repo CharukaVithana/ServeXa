@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Filter, Play, Clock } from 'lucide-react';
-import ProfileHeader from './Header';
-import StatusCards from './cards';
-import NavigationTabs from './Navigation';
+import React, { useState, useEffect } from "react";
+import { Search, Filter, Play, Clock } from "lucide-react";
+import ProfileHeader from "./Header";
+import StatusCards from "./cards";
+import NavigationTabs from "./Navigation";
 
 interface Task {
   id: string;
@@ -47,10 +47,10 @@ const Page1: React.FC = () => {
 const TasksList: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   // API Configuration
-  const API_BASE_URL = 'http://localhost:8080';
+  const API_BASE_URL = "http://127.0.0.1:8080";
 
   // Fetch tasks from API
   useEffect(() => {
@@ -61,23 +61,23 @@ const TasksList: React.FC = () => {
     setLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/tasks/pending`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
 
       if (response.ok) {
         const data = await response.json();
         setTasks(data);
       } else {
-        console.error('Failed to fetch tasks');
+        console.error("Failed to fetch tasks");
         // Use dummy data for demo
         setTasks(getDummyTasks());
       }
     } catch (err) {
-      console.error('Error fetching tasks:', err);
+      console.error("Error fetching tasks:", err);
       // Use dummy data for demo
       setTasks(getDummyTasks());
     } finally {
@@ -88,53 +88,57 @@ const TasksList: React.FC = () => {
   // Dummy data for demonstration
   const getDummyTasks = (): Task[] => [
     {
-      id: '1',
-      taskNumber: '#SRV-2024-003',
-      customerName: 'Robert Chen',
-      vehicleModel: 'Ford F-150 2023',
-      serviceType: 'Transmission Service',
-      dueTime: '3:30 PM',
-      estimatedDuration: '2h',
-      isUrgent: false
+      id: "1",
+      taskNumber: "#SRV-2024-003",
+      customerName: "Robert Chen",
+      vehicleModel: "Ford F-150 2023",
+      serviceType: "Transmission Service",
+      dueTime: "3:30 PM",
+      estimatedDuration: "2h",
+      isUrgent: false,
     },
     {
-      id: '2',
-      taskNumber: '#SRV-2024-004',
-      customerName: 'Emily Davis',
-      vehicleModel: 'BMW 3 Series 2020',
-      serviceType: 'Full Service',
-      dueTime: '4:00 PM',
-      estimatedDuration: '1.5h',
-      isUrgent: true
-    }
+      id: "2",
+      taskNumber: "#SRV-2024-004",
+      customerName: "Emily Davis",
+      vehicleModel: "BMW 3 Series 2020",
+      serviceType: "Full Service",
+      dueTime: "4:00 PM",
+      estimatedDuration: "1.5h",
+      isUrgent: true,
+    },
   ];
 
   const handleStartTask = async (taskId: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}/start`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      const response = await fetch(
+        `${API_BASE_URL}/api/tasks/${taskId}/start`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
-      });
+      );
 
       if (response.ok) {
-        alert('Task started successfully!');
+        alert("Task started successfully!");
         fetchTasks(); // Refresh the list
       } else {
-        alert('Failed to start task');
+        alert("Failed to start task");
       }
     } catch (err) {
-      console.error('Error starting task:', err);
-      alert('Error starting task');
+      console.error("Error starting task:", err);
+      alert("Error starting task");
     }
   };
 
-  const filteredTasks = tasks.filter(task =>
-    task.taskNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    task.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    task.vehicleModel.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredTasks = tasks.filter(
+    (task) =>
+      task.taskNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      task.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      task.vehicleModel.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -142,14 +146,21 @@ const TasksList: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6">
         {/* Section Title */}
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Pending Tasks</h2>
-          <p className="text-sm text-gray-600">Manage and track your assigned service tasks</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Pending Tasks
+          </h2>
+          <p className="text-sm text-gray-600">
+            Manage and track your assigned service tasks
+          </p>
         </div>
 
         {/* Search and Filters */}
         <div className="flex items-center justify-between mb-6 gap-4">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+            <Search
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={18}
+            />
             <input
               type="text"
               placeholder="Search tasks, customers, or vehicles..."
@@ -158,7 +169,7 @@ const TasksList: React.FC = () => {
               className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500 focus:ring-opacity-20 transition-all shadow-sm"
             />
           </div>
-          
+
           <div className="flex items-center gap-3">
             <button className="px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm">
               Show entries
@@ -183,7 +194,9 @@ const TasksList: React.FC = () => {
                 <Search size={32} className="text-gray-400" />
               </div>
               <p className="text-gray-900 font-semibold mb-1">No tasks found</p>
-              <p className="text-gray-500 text-sm">Try adjusting your search or filters</p>
+              <p className="text-gray-500 text-sm">
+                Try adjusting your search or filters
+              </p>
             </div>
           </div>
         ) : (
@@ -196,30 +209,40 @@ const TasksList: React.FC = () => {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-bold text-gray-900">{task.taskNumber}</h3>
+                      <h3 className="text-lg font-bold text-gray-900">
+                        {task.taskNumber}
+                      </h3>
                       {task.isUrgent && (
                         <span className="px-3 py-1 bg-red-100 text-red-600 text-xs font-semibold rounded-full shadow-sm">
                           URGENT
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 mb-1 font-medium">{task.customerName}</p>
+                    <p className="text-sm text-gray-600 mb-1 font-medium">
+                      {task.customerName}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg">
                     <Clock size={14} className="text-gray-500" />
-                    <span className="text-sm text-gray-600 font-medium">Est: {task.estimatedDuration}</span>
+                    <span className="text-sm text-gray-600 font-medium">
+                      Est: {task.estimatedDuration}
+                    </span>
                   </div>
                 </div>
 
                 <div className="mb-5 pb-5 border-b border-gray-100">
-                  <p className="text-base font-semibold text-gray-900 mb-1">{task.vehicleModel}</p>
+                  <p className="text-base font-semibold text-gray-900 mb-1">
+                    {task.vehicleModel}
+                  </p>
                   <p className="text-sm text-gray-600">{task.serviceType}</p>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 bg-red-50 px-3 py-2 rounded-lg">
                     <Clock size={16} className="text-red-600" />
-                    <span className="text-sm font-semibold text-red-600">Due: {task.dueTime}</span>
+                    <span className="text-sm font-semibold text-red-600">
+                      Due: {task.dueTime}
+                    </span>
                   </div>
 
                   <button
