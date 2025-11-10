@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import type { KeyboardEvent } from "react";
 import { MessageCircle, X, Send } from "lucide-react";
 import chatbotIcon from "../assets/chatbotIcon.png";
-import { useAuth } from "../hooks/useAuth"; // import your auth hook
+import { useAuth } from "../hooks/useAuth"; 
 
 interface Message {
   sender: "user" | "bot";
@@ -35,7 +35,7 @@ const Chatbot: React.FC = () => {
     const userMessage = message?.trim() || input.trim();
     if (!userMessage) return;
 
-    // Instead of localStorage, use user.id from auth context
+    // user.id from auth context
     const customerId = user?.id;
 
     // Only warn if user asks for personal info and is not logged in
