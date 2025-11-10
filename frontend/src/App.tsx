@@ -22,6 +22,7 @@ import Appointments from "./pages/customer/Appointments";
 import BookAppointment from "./pages/customer/BookAppointment";
 import Notifications from "./pages/customer/Notifications";
 import { Toaster } from "react-hot-toast";
+import Chatbot from "./components/Chatbot";
 
 // Employee Dashboard Components
 import EmployeeLayout from "./components/employee/EmployeeLayout";
@@ -50,6 +51,17 @@ function App() {
           <Route path="/reset-password" element={<ResetPasswordRequest />} />
           <Route path="/reset-password/new" element={<ResetPasswordNew />} />
 
+
+          {/* Top-level Chatbot route */}
+            <Route
+              path="/chatbot"
+              element={
+                <RoleProtectedRoute allowedRoles={["customer"]}>
+                  <Chatbot />
+                </RoleProtectedRoute>
+              }
+            />
+  
           {/* Customer Dashboard Routes */}
           <Route
             path="/cus-dashboard"
@@ -184,6 +196,7 @@ function App() {
               </RoleProtectedRoute>
             }
           >
+            
             <Route index element={<Navigate to="personal-info" replace />} />
             <Route path="personal-info" element={<PersonalInfo />} />
             <Route path="my-vehicles" element={<MyVehicles />} />
