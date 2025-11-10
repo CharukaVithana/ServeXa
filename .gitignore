@@ -6,8 +6,6 @@
 node_modules/
 
 # Environment files
-.env
-.env.local
 .env.*.local
 
 # Build outputs
@@ -18,7 +16,6 @@ target/
 # IDE
 .idea/
 *.iml
-.vscode/
 *.swp
 *.swo
 
@@ -43,3 +40,4 @@ coverage/
 # Temporary files
 *.tmp
 *.temp
+config.bat
