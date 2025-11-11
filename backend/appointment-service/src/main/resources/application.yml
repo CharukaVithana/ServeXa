@@ -3,9 +3,9 @@ spring:
     name: appointment-service
   
   datasource:
-    url: jdbc:postgresql://postgres:5432/servexa_appointment
+    url: jdbc:postgresql://localhost:5432/servexa_appointment
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    password: ${DB_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: 20000
@@ -46,3 +46,8 @@ management:
 
 jwt:
   secret: ${JWT_SECRET:MySecretKeyForServeXaApplicationThatIsAtLeast256BitsLong123456}
+
+# Vehicle service configuration
+vehicle:
+  service:
+    url: ${VEHICLE_SERVICE_URL:http://localhost:8084}

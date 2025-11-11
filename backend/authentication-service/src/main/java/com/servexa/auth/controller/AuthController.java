@@ -1,7 +1,6 @@
 package com.servexa.auth.controller;
 
 import com.servexa.auth.dto.AuthResponse;
-import com.servexa.auth.dto.CustomerRequest;
 import com.servexa.auth.dto.LoginRequest;
 import com.servexa.auth.dto.RefreshTokenRequest;
 import com.servexa.auth.dto.SignupRequest;
@@ -21,8 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.beans.factory.annotation.Value;
 
 @Slf4j
 @RestController
@@ -33,10 +30,6 @@ public class AuthController {
 
     private final AuthService authService;
     private final JwtUtil jwtUtil;
-    private final RestTemplate restTemplate;
-
-    @Value("${services.customer-service.url}")
-    private String customerServiceUrl;
 
     @PostMapping("/signup")
     @Operation(summary = "Register a new user")
@@ -44,25 +37,6 @@ public class AuthController {
         try {
             // Register user in Auth Service
             AuthResponse signupResponse = authService.signup(request);
-
-            // 2Prepare data for Customer Service
-            CustomerRequest customerRequest = new CustomerRequest(
-                    request.getFullName(), // name
-                    request.getEmail(), // email
-                    request.getPhoneNumber(), // phoneNumber
-                    "" // address (optional for now)
-            );
-
-            // Send to Customer Service
-            try {
-                restTemplate.postForObject(
-                        customerServiceUrl + "/api/customers",
-                        customerRequest,
-                        String.class);
-                System.out.println("✅ Synced user to Customer Service: " + request.getEmail());
-            } catch (Exception e) {
-                System.err.println("⚠️ Failed to sync user to Customer Service: " + e.getMessage());
-            }
 
             // Return success
             return ResponseEntity.ok(

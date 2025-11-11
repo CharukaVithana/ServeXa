@@ -135,7 +135,108 @@ services:
       start_period: 40s
     restart: unless-stopped
 
+  # Notification Service
+  notification-service:
+    image: servexa/notification-service:latest
+    container_name: servexa-notification
+    build:
+      context: ./backend/notification-service
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      auth-service:
+        condition: service_healthy
+    networks:
+      - servexa-network
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+      REDIS_HOST: redis
+      AUTH_SERVICE_URL: http://auth-service:8081
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
   # API Gateway removed - directory doesn't exist
+
+  # Chroma Vector Database
+  chroma:
+    image: chromadb/chroma:0.4.24
+    container_name: servexa-chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    networks:
+      - servexa-network
+    environment:
+      IS_PERSISTENT: TRUE
+      PERSIST_DIRECTORY: /chroma/chroma
+      ANONYMIZED_TELEMETRY: FALSE
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Chatbot Service
+  chatbot-service:
+    image: servexa/chatbot-service:latest
+    container_name: servexa-chatbot
+    build:
+      context: ./backend/chatbot-service
+      dockerfile: Dockerfile
+    ports:
+      - "8086:8086"
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      appointment-service:
+        condition: service_healthy
+      vehicle-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+      chroma:
+        condition: service_healthy
+    networks:
+      - servexa-network
+    environment:
+      # Service URLs for internal communication
+      AUTH_SERVICE_URL: http://auth-service:8081
+      APPOINTMENT_SERVICE_URL: http://appointment-service:8083
+      VEHICLE_SERVICE_URL: http://vehicle-service:8084
+      NOTIFICATION_SERVICE_URL: http://notification-service:8085
+      # OpenAI API Key should be provided via .env file
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      # Chroma configuration for Docker environment
+      CHROMA_HOST: chroma
+      CHROMA_PORT: 8000
+    volumes:
+      # Mount the PDF file for RAG
+      - ./backend/chatbot-service/ServeXa.pdf:/app/backend/chatbot-service/ServeXa.pdf:ro
+      # Persist Chroma DB
+      - chatbot_chroma_db:/app/chroma_db
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8086/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
 
   # Frontend Application
   frontend:
@@ -153,6 +254,8 @@ services:
         condition: service_healthy
       vehicle-service:
         condition: service_healthy
+      notification-service:
+        condition: service_healthy
     networks:
       - servexa-network
     environment:
@@ -161,6 +264,8 @@ services:
       VITE_AUTH_SERVICE_URL: http://localhost:8081
       VITE_APPOINTMENT_SERVICE_URL: http://localhost:8083
       VITE_VEHICLE_SERVICE_URL: http://localhost:8084
+      VITE_NOTIFICATION_SERVICE_URL: http://localhost:8085
+      VITE_CHATBOT_SERVICE_URL: http://localhost:8086
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80"]
       interval: 30s
@@ -171,6 +276,10 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  chatbot_chroma_db:
+    driver: local
+  chroma_data:
     driver: local
 
 networks:

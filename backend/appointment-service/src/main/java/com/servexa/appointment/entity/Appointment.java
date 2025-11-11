@@ -26,7 +26,10 @@ public class Appointment extends BaseEntity {
     @Column(nullable = false)
     private String phoneNumber;
 
-    @Column(nullable = false)
+    @Column(name = "vehicle_id")
+    private String vehicleId;
+    
+    @Column
     private String vehicleType;
 
     @Column(nullable = false)

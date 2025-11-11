@@ -4,3 +4,4 @@ CREATE DATABASE servexa_appointment;
 CREATE DATABASE servexa_customer;
 CREATE DATABASE servexa_employee;
 CREATE DATABASE servexa_vehicle_db;
+CREATE DATABASE notification_db;

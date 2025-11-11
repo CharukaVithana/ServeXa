@@ -5,3 +5,8 @@ spring:
 eureka:
   instance:
     hostname: appointment-service
+
+# Vehicle service configuration for Docker
+vehicle:
+  service:
+    url: http://vehicle-service:8084

@@ -4,7 +4,7 @@ import { FaTimes, FaUpload, FaTrash } from 'react-icons/fa';
 interface ProfilePictureModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (imageUrl: string | null) => void; // Allow saving null to remove picture
+  onSave: (imageUrl: string | null) => Promise<void>; // Allow saving null to remove picture
   currentImageUrl: string | null | undefined;
 }
 
@@ -26,11 +26,15 @@ const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({ isOpen, onClo
 
   const handleSave = async () => {
     setIsUploading(true);
-    // Simulate upload process
-    await new Promise(resolve => setTimeout(resolve, 1000)); 
-    onSave(imagePreview); // Pass the new image URL (or null) to the parent
-    setIsUploading(false);
-    onClose();
+    try {
+      await onSave(imagePreview); // Pass the new image URL (or null) to the parent
+      // Don't close here - let parent handle closing after successful save
+    } catch (error) {
+      console.error('Failed to save profile picture:', error);
+      // Optionally show error message
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleRemove = () => {

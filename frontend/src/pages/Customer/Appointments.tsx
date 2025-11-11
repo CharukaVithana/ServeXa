@@ -6,11 +6,26 @@ import Sidebar from '../../components/Sidebar';
 import appointmentService from '../../services/appointmentService';
 import { toast } from 'react-hot-toast';
 
-const AppointmentCard = ({ title, date, time, location, vehicle, status }: { title: string, date: string, time: string, location: string, vehicle: string, status: 'Confirmed' | 'Pending' }) => {
+const AppointmentCard = ({ appointment }: { appointment: any }) => {
+    const { title, date, time, location, vehicle, status, createdAt } = appointment;
     const isConfirmed = status === 'Confirmed';
+    
+    // Format booking time
+    const bookingTime = createdAt ? new Date(createdAt).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    }) : 'Recently';
+    
     return (
         <div className={`p-4 rounded-lg border-l-4 ${isConfirmed ? 'bg-green-50 border-green-500' : 'bg-yellow-50 border-yellow-500'}`}>
-            <h3 className="font-bold text-gray-800">{title}</h3>
+            <div className="flex justify-between items-start mb-2">
+                <h3 className="font-bold text-gray-800">{title}</h3>
+                <span className="text-xs text-gray-500">Booked on {bookingTime}</span>
+            </div>
             <div className="text-gray-600 text-sm mt-2 space-y-1">
                 <p className="flex items-center gap-2"><FaCalendarDay /> {date}</p>
                 <p className="flex items-center gap-2"><FaClock /> {time}</p>
@@ -49,29 +64,31 @@ const Appointments = () => {
         
         try {
             setLoading(true);
-            const customerId = parseInt(user.id);
-            if (!isNaN(customerId)) {
-                const data = await appointmentService.getCustomerAppointments(customerId);
-                // Transform data for display
-                const transformedData = data.map(appointment => ({
-                    title: appointment.serviceType,
-                    date: new Date(appointment.bookingDateTime).toLocaleDateString('en-US', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                    }),
-                    time: new Date(appointment.bookingDateTime).toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true
-                    }),
-                    location: 'Main Service Center',
-                    vehicle: appointment.vehicleType,
-                    status: appointment.status === 'SCHEDULED' ? 'Confirmed' : 'Pending',
-                    id: appointment.id
-                }));
-                setAppointments(transformedData);
-            }
+            // User ID is already a string UUID, no need to parse
+            const data = await appointmentService.getCustomerAppointments(user.id);
+            console.log('Appointments data received:', data); // Debug log
+            // Transform data for display
+            const transformedData = data.map(appointment => {
+                console.log('Processing appointment:', appointment); // Debug log
+                return {
+                title: appointment.serviceType,
+                date: new Date(appointment.bookingDateTime).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                }),
+                time: new Date(appointment.bookingDateTime).toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                }),
+                location: 'Main Service Center',
+                vehicle: appointment.vehicleType || `Vehicle ID: ${appointment.vehicleId}`,
+                status: appointment.status === 'SCHEDULED' || appointment.status === 'CONFIRMED' || appointment.status === 'CREATED' ? 'Confirmed' : 'Pending',
+                id: appointment.id,
+                createdAt: appointment.createdAt
+            }});
+            setAppointments(transformedData);
         } catch (error) {
             console.error('Error fetching appointments:', error);
             toast.error('Failed to load appointments');
@@ -114,8 +131,7 @@ const Appointments = () => {
                             appointments.map((appt) => (
                                 <AppointmentCard 
                                     key={appt.id} 
-                                    {...appt} 
-                                    status={appt.status as "Confirmed" | "Pending"} 
+                                    appointment={appt}
                                 />
                             ))
                         ) : (

@@ -31,7 +31,7 @@ const Signup = () => {
       email: "",
       password: "",
       confirmPassword: "",
-      role: "CUSTOMER" as 'CUSTOMER' | 'EMPLOYEE' | 'ADMIN',
+      role: "CUSTOMER" as 'CUSTOMER' | 'EMPLOYEE',
     },
     validate: (values) => {
       const baseErrors = validateForm(values, authValidation.signup);
@@ -191,11 +191,10 @@ const Signup = () => {
               >
                 <option value="CUSTOMER">Customer - I need vehicle services</option>
                 <option value="EMPLOYEE">Employee - I work at ServeXa</option>
-                <option value="ADMIN">Admin - I manage ServeXa</option>
               </select>
               {values.role !== "CUSTOMER" && (
                 <p className="text-sm text-yellow-600 mt-2">
-                  ⚠️ {values.role === "EMPLOYEE" ? "Employee" : "Admin"} accounts require approval from an administrator
+                  ⚠️ Employee accounts require approval from an administrator
                 </p>
               )}
             </div>

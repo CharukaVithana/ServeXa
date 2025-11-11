@@ -67,7 +67,8 @@ const CustomerProfile = () => {
                         </div>
                     </div>
                     <button onClick={() => setPictureModalOpen(true)} className="bg-[#D72638] text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 flex items-center gap-2 mt-4 sm:mt-0">
-                        <FaPencilAlt /> Edit Profile
+                        <FaPencilAlt /> 
+                         Picture
                     </button>
                 </header>
 
@@ -101,7 +102,15 @@ const CustomerProfile = () => {
             <ProfilePictureModal
                 isOpen={isPictureModalOpen}
                 onClose={() => setPictureModalOpen(false)}
-                onSave={updateProfilePicture}
+                onSave={async (imageUrl) => {
+                    try {
+                        await updateProfilePicture(imageUrl);
+                        setPictureModalOpen(false);
+                    } catch (error) {
+                        console.error('Failed to update profile picture:', error);
+                        // Optionally show an error message
+                    }
+                }}
                 currentImageUrl={user?.profilePictureUrl}
             />
         </div>

@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import authService from "../services/authService";
 import vehicleService from "../services/vehicleService";
+import { SERVICE_ENDPOINTS } from "../config/services";
 import type {
   AuthContextType,
   AuthState,
@@ -137,7 +138,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         );
 
         // Also store token with the expected key
-        localStorage.setItem("token", response.accessToken);
+        localStorage.setItem("authToken", response.accessToken);
 
         setState({
           user,
@@ -431,15 +432,63 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     },
     [state.user]
   );
-  const updateProfilePicture = useCallback((imageUrl: string | null) => {
-    setState((prevState) => {
-      if (!prevState.user) return prevState;
-      const updatedUser = { ...prevState.user, profilePictureUrl: imageUrl };
-      return { ...prevState, user: updatedUser };
-    });
+  const updateProfilePicture = useCallback(
+    async (imageUrl: string | null) => {
+      try {
+        if (!state.user) {
+          throw new Error("No user logged in");
+        }
 
-    console.log("Updated profile picture URL:", imageUrl);
-  }, []);
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          throw new Error("No authentication token");
+        }
+
+        console.log("Updating profile picture for user:", state.user.id);
+        console.log("Token being sent:", `Bearer ${token.substring(0, 20)}...`);
+
+        const response = await fetch(
+          `${SERVICE_ENDPOINTS.auth}/api/auth/users/${state.user.id}/profile-picture`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ imageUrl }),
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.text();
+          console.error("Profile picture update failed:", response.status, errorData);
+          throw new Error("Failed to update profile picture");
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          setState((prevState) => {
+            if (!prevState.user) return prevState;
+            const updatedUser = {
+              ...prevState.user,
+              profilePictureUrl: data.data.imageUrl || null,
+            };
+            return { ...prevState, user: updatedUser };
+          });
+        }
+      } catch (error) {
+        console.error("Error updating profile picture:", error);
+        setState((prev) => ({
+          ...prev,
+          error:
+            error instanceof Error ? error.message : "Failed to update profile picture",
+        }));
+        throw error;
+      }
+    },
+    [state.user]
+  );
 
   const value: AuthContextType = {
     ...state,

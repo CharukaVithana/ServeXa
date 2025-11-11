@@ -35,6 +35,7 @@ public class Vehicle {
     
     private String vin;
     
+    @Column(columnDefinition = "TEXT")
     private String imageUrl;
     
     @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")

@@ -44,7 +44,7 @@ class AppointmentIntegrationTest {
         appointmentRepository.deleteAll();
         
         appointmentRequest = AppointmentRequest.builder()
-                .customerId(1L)
+                .customerId("1")
                 .fullName("John Doe")
                 .phoneNumber("(555) 123-4567")
                 .vehicleType("Toyota Corolla 2020")
@@ -64,7 +64,7 @@ class AppointmentIntegrationTest {
                         .content(objectMapper.writeValueAsString(appointmentRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.customerId").value(1L))
+                .andExpect(jsonPath("$.data.customerId").value("1"))
                 .andExpect(jsonPath("$.data.status").value("CREATED"))
                 .andExpect(jsonPath("$.data.isAssigned").value(false))
                 .andReturn()
@@ -91,7 +91,7 @@ class AppointmentIntegrationTest {
         // Create appointment
         Appointment savedAppointment = appointmentRepository.save(
                 Appointment.builder()
-                        .customerId(1L)
+                        .customerId("1")
                         .fullName("John Doe")
                         .phoneNumber("(555) 123-4567")
                         .vehicleType("Toyota Corolla 2020")
@@ -116,7 +116,7 @@ class AppointmentIntegrationTest {
         mockMvc.perform(put("/api/appointments/" + appointmentId + "/assign")
                         .param("employeeId", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.assignedEmployeeId").value(10))
+                .andExpect(jsonPath("$.data.assignedEmployeeId").value("10"))
                 .andExpect(jsonPath("$.data.isAssigned").value(true));
 
         // Verify in database
@@ -132,7 +132,7 @@ class AppointmentIntegrationTest {
         // Create multiple appointments for same customer
         appointmentRepository.save(
                 Appointment.builder()
-                        .customerId(1L)
+                        .customerId("1")
                         .fullName("John Doe")
                         .phoneNumber("(555) 123-4567")
                         .vehicleType("Toyota Corolla 2020")
@@ -147,7 +147,7 @@ class AppointmentIntegrationTest {
 
         appointmentRepository.save(
                 Appointment.builder()
-                        .customerId(1L)
+                        .customerId("1")
                         .fullName("John Doe")
                         .phoneNumber("(555) 123-4567")
                         .vehicleType("Toyota Corolla 2020")
@@ -164,8 +164,8 @@ class AppointmentIntegrationTest {
         mockMvc.perform(get("/api/appointments/customer/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data", hasSize(2)))
-                .andExpect(jsonPath("$.data[0].customerId").value(1))
-                .andExpect(jsonPath("$.data[1].customerId").value(1));
+                .andExpect(jsonPath("$.data[0].customerId").value("1"))
+                .andExpect(jsonPath("$.data[1].customerId").value("1"));
     }
 
     @Test
@@ -173,7 +173,7 @@ class AppointmentIntegrationTest {
         // Create assigned and unassigned appointments
         appointmentRepository.save(
                 Appointment.builder()
-                        .customerId(1L)
+                        .customerId("1")
                         .fullName("John Doe")
                         .phoneNumber("(555) 123-4567")
                         .vehicleType("Toyota Corolla 2020")
@@ -188,7 +188,7 @@ class AppointmentIntegrationTest {
 
         appointmentRepository.save(
                 Appointment.builder()
-                        .customerId(2L)
+                        .customerId("2")
                         .fullName("Jane Smith")
                         .phoneNumber("(555) 987-6543")
                         .vehicleType("Honda Civic 2021")

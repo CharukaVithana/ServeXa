@@ -29,7 +29,7 @@ class AppointmentRepositoryTest {
     @BeforeEach
     void setUp() {
         appointment1 = Appointment.builder()
-                .customerId(1L)
+                .customerId("1")
                 .fullName("John Doe")
                 .phoneNumber("(555) 123-4567")
                 .vehicleType("Toyota Corolla 2020")
@@ -43,7 +43,7 @@ class AppointmentRepositoryTest {
                 .build();
 
         appointment2 = Appointment.builder()
-                .customerId(2L)
+                .customerId("2")
                 .fullName("Jane Smith")
                 .phoneNumber("(555) 987-6543")
                 .vehicleType("Honda Civic 2021")
@@ -64,16 +64,16 @@ class AppointmentRepositoryTest {
 
     @Test
     void findByCustomerId_Success() {
-        List<Appointment> appointments = appointmentRepository.findByCustomerId(1L);
+        List<Appointment> appointments = appointmentRepository.findByCustomerId("1");
 
         assertThat(appointments).hasSize(1);
         assertThat(appointments.get(0).getFullName()).isEqualTo("John Doe");
-        assertThat(appointments.get(0).getCustomerId()).isEqualTo(1L);
+        assertThat(appointments.get(0).getCustomerId()).isEqualTo("1");
     }
 
     @Test
     void findByCustomerId_NoResults() {
-        List<Appointment> appointments = appointmentRepository.findByCustomerId(999L);
+        List<Appointment> appointments = appointmentRepository.findByCustomerId("999");
 
         assertThat(appointments).isEmpty();
     }
@@ -123,7 +123,7 @@ class AppointmentRepositoryTest {
     @Test
     void saveAppointment_Success() {
         Appointment newAppointment = Appointment.builder()
-                .customerId(3L)
+                .customerId("3")
                 .fullName("Bob Johnson")
                 .phoneNumber("(555) 456-7890")
                 .vehicleType("Ford F-150 2022")

@@ -1,0 +1,13 @@
+# Base development image with Maven and JDK
+FROM eclipse-temurin:17-jdk-alpine
+
+# Install Maven
+RUN apk add --no-cache maven
+
+# Create directory for Maven repository
+RUN mkdir -p /root/.m2
+
+# Set Maven to use more memory for better performance
+ENV MAVEN_OPTS="-Xmx1024m"
+
+# This base image will be used by all services

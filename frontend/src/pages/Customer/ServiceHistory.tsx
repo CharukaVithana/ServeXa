@@ -1,51 +1,117 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaCheckCircle, FaEye } from 'react-icons/fa';
+import appointmentService from '../../services/appointmentService';
+import authService from '../../services/authService';
 
 const ServiceHistory = () => {
-    // Placeholder data
-    const history = [
-        { date: 'June 15, 2023', vehicle: 'Toyota Camry', service: 'Oil Change & Filter', status: 'completed', cost: '$89.99' },
-        { date: 'April 3, 2023', vehicle: 'Toyota Camry', service: 'Brake Replacement', status: 'completed', cost: '$350.00' },
-        { date: 'January 22, 2023', vehicle: 'Honda Civic', service: 'Annual Inspection', status: 'completed', cost: '$120.00' },
-    ];
+    const [history, setHistory] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        fetchServiceHistory();
+    }, []);
+
+    const fetchServiceHistory = async () => {
+        try {
+            setLoading(true);
+            setError('');
+            
+            // Get current user
+            const user = await authService.getCurrentUser();
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
+            // Fetch customer appointments
+            const appointments = await appointmentService.getCustomerAppointments(user.id);
+            
+            // Filter only completed appointments and format them
+            const completedServices = appointments
+                .filter(appointment => appointment.status.toLowerCase() === 'completed')
+                .map(appointment => ({
+                    id: appointment.id,
+                    date: new Date(appointment.bookingDateTime).toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    }),
+                    vehicle: `Vehicle ${appointment.vehicleId}`, // We'll need to fetch vehicle details
+                    service: appointment.serviceType,
+                    status: appointment.status,
+                    cost: 'N/A', // Cost might not be available in the current backend
+                    employeeName: appointment.employeeName || 'N/A'
+                }))
+                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+            setHistory(completedServices);
+        } catch (error) {
+            console.error('Error fetching service history:', error);
+            setError('Failed to fetch service history');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div>
             <h2 className="text-xl font-bold text-gray-800 mb-6">Service History</h2>
-            <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50">
-                        <tr className="text-sm font-semibold text-gray-600">
-                            <th className="p-4">Date</th>
-                            <th className="p-4">Vehicle</th>
-                            <th className="p-4">Service Type</th>
-                            <th className="p-4">Status</th>
-                            <th className="p-4">Cost</th>
-                            <th className="p-4">Receipt</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {history.map((item, index) => (
-                            <tr key={index} className="border-b border-gray-200">
-                                <td className="p-4">{item.date}</td>
-                                <td className="p-4">{item.vehicle}</td>
-                                <td className="p-4">{item.service}</td>
-                                <td className="p-4">
-                                    <span className="flex items-center gap-2 text-green-600">
-                                        <FaCheckCircle /> Completed
-                                    </span>
-                                </td>
-                                <td className="p-4">{item.cost}</td>
-                                <td className="p-4">
-                                    <button className="text-red-500 hover:underline flex items-center gap-1">
-                                        <FaEye /> View
-                                    </button>
-                                </td>
+            
+            {loading && (
+                <div className="text-center py-8">
+                    <p className="text-gray-500">Loading service history...</p>
+                </div>
+            )}
+            
+            {error && (
+                <div className="bg-red-50 border border-red-200 rounded p-4 mb-4">
+                    <p className="text-red-600">{error}</p>
+                </div>
+            )}
+            
+            {!loading && !error && history.length === 0 && (
+                <div className="text-center py-12 bg-gray-50 rounded">
+                    <p className="text-gray-500 mb-2">No service history found</p>
+                    <p className="text-gray-400 text-sm">Your completed services will appear here</p>
+                </div>
+            )}
+            
+            {!loading && !error && history.length > 0 && (
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead className="bg-gray-50">
+                            <tr className="text-sm font-semibold text-gray-600">
+                                <th className="p-4">Date</th>
+                                <th className="p-4">Vehicle</th>
+                                <th className="p-4">Service Type</th>
+                                <th className="p-4">Status</th>
+                                <th className="p-4">Technician</th>
+                                <th className="p-4">Receipt</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            {history.map((item) => (
+                                <tr key={item.id} className="border-b border-gray-200">
+                                    <td className="p-4">{item.date}</td>
+                                    <td className="p-4">{item.vehicle}</td>
+                                    <td className="p-4">{item.service}</td>
+                                    <td className="p-4">
+                                        <span className="flex items-center gap-2 text-green-600">
+                                            <FaCheckCircle /> Completed
+                                        </span>
+                                    </td>
+                                    <td className="p-4">{item.employeeName}</td>
+                                    <td className="p-4">
+                                        <button className="text-red-500 hover:underline flex items-center gap-1">
+                                            <FaEye /> View
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </div>
     );
 };

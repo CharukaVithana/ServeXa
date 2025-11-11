@@ -6,7 +6,8 @@ interface AppointmentRequest {
   customerId: string;
   fullName: string;
   phoneNumber: string;
-  vehicleType: string;
+  vehicleId: string;
+  vehicleType?: string;
   serviceType: string;
   bookingDateTime: string;
   additionalNote?: string;
@@ -19,7 +20,8 @@ interface AppointmentResponse {
   customerId: string;
   fullName: string;
   phoneNumber: string;
-  vehicleType: string;
+  vehicleId: string;
+  vehicleType?: string; // For backward compatibility
   serviceType: string;
   bookingDateTime: string;
   additionalNote?: string;
@@ -144,7 +146,7 @@ class AppointmentService {
   }
 
   async getCustomerAppointments(
-    customerId: number
+    customerId: string
   ): Promise<AppointmentResponse[]> {
     try {
       const response = await axios.get(
@@ -252,6 +254,32 @@ class AppointmentService {
       if (axios.isAxiosError(error)) {
         throw new Error(
           error.response?.data?.message || "Failed to assign employee"
+        );
+      }
+      throw error;
+    }
+  }
+
+  async getCustomerStatistics(customerId: string): Promise<{
+    activeServices: number;
+    totalVehicles: number;
+    pastServices: number;
+    upcomingAppointments: number;
+    totalSpent: number;
+    averageRating: number;
+    totalServices: number;
+  }> {
+    try {
+      const response = await axios.get(
+        getApiUrl("appointment", `/api/appointments/statistics/customer/${customerId}`),
+        this.getAuthHeaders()
+      );
+      return response.data.data;
+    } catch (error) {
+      console.error("Error fetching customer statistics:", error);
+      if (axios.isAxiosError(error)) {
+        throw new Error(
+          error.response?.data?.message || "Failed to fetch customer statistics"
         );
       }
       throw error;

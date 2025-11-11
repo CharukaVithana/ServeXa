@@ -17,6 +17,7 @@ public class AppointmentResponse {
     private String customerId;
     private String fullName;
     private String phoneNumber;
+    private String vehicleId;
     private String vehicleType;
     private String serviceType;
     private LocalDateTime bookingDateTime;

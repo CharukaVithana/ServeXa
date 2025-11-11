@@ -41,6 +41,9 @@ function App() {
       <AuthProvider>
         {/* ✅ Toaster must be inside Provider but outside Routes */}
         <Toaster position="top-right" reverseOrder={false} />
+        
+        {/* ✅ Global Chatbot - appears on all pages */}
+        <Chatbot />
 
         {/* ✅ Routes should wrap all Route elements (not self-closed) */}
         <Routes>
@@ -52,15 +55,6 @@ function App() {
           <Route path="/reset-password/new" element={<ResetPasswordNew />} />
 
 
-          {/* Top-level Chatbot route */}
-            <Route
-              path="/chatbot"
-              element={
-                <RoleProtectedRoute allowedRoles={["customer"]}>
-                  <Chatbot />
-                </RoleProtectedRoute>
-              }
-            />
   
           {/* Customer Dashboard Routes */}
           <Route

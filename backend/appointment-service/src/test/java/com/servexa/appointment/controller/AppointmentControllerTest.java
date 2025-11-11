@@ -45,7 +45,7 @@ class AppointmentControllerTest {
         LocalDateTime bookingTime = LocalDateTime.now().plusDays(1);
         
         appointmentRequest = AppointmentRequest.builder()
-                .customerId(1L)
+                .customerId("1")
                 .fullName("John Doe")
                 .phoneNumber("(555) 123-4567")
                 .vehicleType("Toyota Corolla 2020")
@@ -58,7 +58,7 @@ class AppointmentControllerTest {
 
         appointmentResponse = AppointmentResponse.builder()
                 .id("test-uuid-1")
-                .customerId(1L)
+                .customerId("1")
                 .fullName("John Doe")
                 .phoneNumber("(555) 123-4567")
                 .vehicleType("Toyota Corolla 2020")
@@ -86,7 +86,7 @@ class AppointmentControllerTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Appointment created successfully"))
                 .andExpect(jsonPath("$.data.id").value("test-uuid-1"))
-                .andExpect(jsonPath("$.data.customerId").value(1L))
+                .andExpect(jsonPath("$.data.customerId").value("1"))
                 .andExpect(jsonPath("$.data.status").value("CREATED"))
                 .andExpect(jsonPath("$.data.isAssigned").value(false));
     }
@@ -128,13 +128,13 @@ class AppointmentControllerTest {
     @Test
     void getCustomerAppointments_Success() throws Exception {
         List<AppointmentResponse> appointments = Arrays.asList(appointmentResponse);
-        when(appointmentService.getAppointmentsByCustomerId(1L)).thenReturn(appointments);
+        when(appointmentService.getAppointmentsByCustomerId("1")).thenReturn(appointments);
 
         mockMvc.perform(get("/api/appointments/customer/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data", hasSize(1)))
-                .andExpect(jsonPath("$.data[0].customerId").value(1L));
+                .andExpect(jsonPath("$.data[0].customerId").value("1"));
     }
 
     @Test

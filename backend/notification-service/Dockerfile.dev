@@ -1,0 +1,22 @@
+# Development Dockerfile for Notification Service with Hot Reload
+FROM eclipse-temurin:17-jdk-alpine
+
+# Install Maven
+RUN apk add --no-cache maven
+
+# Set working directory
+WORKDIR /app
+
+# Copy pom.xml for dependency caching
+COPY pom.xml .
+
+# Note: Parent pom and common-libs will be mounted as volumes in docker-compose.dev.yml
+
+# Copy source code
+COPY . .
+
+# Expose application port, debug port, and LiveReload port
+EXPOSE 8085 5008 35729
+
+# Use Maven Spring Boot plugin to run with DevTools
+CMD ["mvn", "spring-boot:run", "-Dspring-boot.run.jvmArguments=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5008"]

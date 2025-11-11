@@ -1,65 +1,261 @@
-# Docker Compose override for development
-# This file extends docker-compose.yml with development-specific configurations
-# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+# Docker Compose for development with hot reload
+# Usage: docker-compose -f docker-compose.dev.yml up
+# This runs services with hot reload enabled
 
 services:
-  # Development overrides for PostgreSQL
+  # PostgreSQL Database
   postgres:
+    image: postgres:15-alpine
+    container_name: servexa-postgres-dev
     environment:
-      POSTGRES_DB: servexa_dev
-    volumes:
-      - postgres_dev_data:/var/lib/postgresql/data
-      - ./backend/docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+      - ./backend/docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - servexa-network-dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # Development overrides for Redis
+  # Redis Cache
   redis:
+    image: redis:7-alpine
+    container_name: servexa-redis-dev
     ports:
       - "6379:6379"
+    networks:
+      - servexa-network-dev
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # Development overrides for Auth Service
+  # Authentication Service - Development Mode with Hot Reload
   auth-service:
+    image: servexa/dev-base:latest
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev-base
+    container_name: servexa-auth-dev
+    ports:
+      - "8081:8081"
+      - "5005:5005"  # Debug port
+      - "35729:35729"  # LiveReload port
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - servexa-network-dev
     environment:
-      SPRING_PROFILES_ACTIVE: dev
-      LOGGING_LEVEL_COM_SERVEXA: DEBUG
+      SPRING_PROFILES_ACTIVE: dev,docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+      REDIS_HOST: redis
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      SPRING_DEVTOOLS_LIVERELOAD_ENABLED: "true"
+      SPRING_DEVTOOLS_REMOTE_SECRET: "mysecret"
     volumes:
-      # Hot reload for development (if supported)
-      - ./backend/authentication-service/target/classes:/app/classes
+      # Mount entire backend directory to access parent pom and common-libs
+      - ./backend:/backend
+      # Mount specific service directory as working directory
+      - ./backend/authentication-service:/app
+      # Mount Maven repository to speed up builds
+      - maven_repo:/root/.m2
+    working_dir: /app
+    command: mvn spring-boot:run -Dspring-boot.run.profiles=dev,docker
 
-  # Development overrides for Appointment Service
+  # Appointment Service - Development Mode with Hot Reload
   appointment-service:
+    image: servexa/dev-base:latest
+    container_name: servexa-appointment-dev
+    ports:
+      - "8083:8083"
+      - "5006:5006"  # Debug port
+      - "35730:35729"  # LiveReload port (different external port)
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      auth-service:
+        condition: service_started
+    networks:
+      - servexa-network-dev
     environment:
-      SPRING_PROFILES_ACTIVE: dev
-      LOGGING_LEVEL_COM_SERVEXA: DEBUG
+      SPRING_PROFILES_ACTIVE: dev,docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+      REDIS_HOST: redis
+      AUTH_SERVICE_URL: http://auth-service:8081
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006"
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      SPRING_DEVTOOLS_LIVERELOAD_ENABLED: "true"
+      SPRING_DEVTOOLS_REMOTE_SECRET: "mysecret"
     volumes:
-      - ./backend/appointment-service/target/classes:/app/classes
+      - ./backend:/backend
+      - ./backend/appointment-service:/app
+      - maven_repo:/root/.m2
+    working_dir: /app
+    command: mvn spring-boot:run -Dspring-boot.run.profiles=dev,docker
 
-  # Development overrides for Vehicle Service
+  # Vehicle Service - Development Mode with Hot Reload
   vehicle-service:
+    image: servexa/dev-base:latest
+    container_name: servexa-vehicle-dev
+    ports:
+      - "8084:8084"
+      - "5007:5007"  # Debug port
+      - "35731:35729"  # LiveReload port
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      auth-service:
+        condition: service_started
+    networks:
+      - servexa-network-dev
     environment:
-      SPRING_PROFILES_ACTIVE: dev
-      LOGGING_LEVEL_COM_SERVEXA: DEBUG
+      SPRING_PROFILES_ACTIVE: dev,docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+      REDIS_HOST: redis
+      AUTH_SERVICE_URL: http://auth-service:8081
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5007"
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      SPRING_DEVTOOLS_LIVERELOAD_ENABLED: "true"
+      SPRING_DEVTOOLS_REMOTE_SECRET: "mysecret"
     volumes:
-      - ./backend/vehicle-service/target/classes:/app/classes
+      - ./backend:/backend
+      - ./backend/vehicle-service:/app
+      - maven_repo:/root/.m2
+    working_dir: /app
+    command: mvn spring-boot:run -Dspring-boot.run.profiles=dev,docker
 
-  # Development overrides for Frontend
+  # Notification Service - Development Mode with Hot Reload
+  notification-service:
+    image: servexa/dev-base:latest
+    container_name: servexa-notification-dev
+    ports:
+      - "8085:8085"
+      - "5008:5008"  # Debug port
+      - "35732:35729"  # LiveReload port
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      auth-service:
+        condition: service_started
+    networks:
+      - servexa-network-dev
+    environment:
+      SPRING_PROFILES_ACTIVE: dev,docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+      REDIS_HOST: redis
+      AUTH_SERVICE_URL: http://auth-service:8081
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5008"
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      SPRING_DEVTOOLS_LIVERELOAD_ENABLED: "true"
+      SPRING_DEVTOOLS_REMOTE_SECRET: "mysecret"
+    volumes:
+      - ./backend:/backend
+      - ./backend/notification-service:/app
+      - maven_repo:/root/.m2
+    working_dir: /app
+    command: mvn spring-boot:run -Dspring-boot.run.profiles=dev,docker
+
+  # Chatbot Service - Development Mode
+  chatbot-service:
+    build:
+      context: ./backend/chatbot-service
+      dockerfile: Dockerfile.dev
+    container_name: servexa-chatbot-dev
+    ports:
+      - "8086:8086"
+    depends_on:
+      auth-service:
+        condition: service_started
+      appointment-service:
+        condition: service_started
+      vehicle-service:
+        condition: service_started
+      notification-service:
+        condition: service_started
+    networks:
+      - servexa-network-dev
+    environment:
+      # Service URLs for internal communication
+      AUTH_SERVICE_URL: http://auth-service:8081
+      APPOINTMENT_SERVICE_URL: http://appointment-service:8083
+      VEHICLE_SERVICE_URL: http://vehicle-service:8084
+      NOTIFICATION_SERVICE_URL: http://notification-service:8085
+      # OpenAI API Key should be provided via .env file
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    volumes:
+      # Mount source code for hot reload
+      - ./backend/chatbot-service:/app
+      # Mount the PDF file for RAG
+      - ./backend/chatbot-service/ServeXa.pdf:/app/backend/chatbot-service/ServeXa.pdf:ro
+      # Persist Chroma DB
+      - chatbot_chroma_db_dev:/app/chroma_db
+
+  # Frontend Application - Development Mode
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.dev # If you have a dev-specific Dockerfile
-      target: development
+      dockerfile: Dockerfile.dev
+    container_name: servexa-frontend-dev
+    ports:
+      - "3000:3000"
+    networks:
+      - servexa-network-dev
     environment:
       NODE_ENV: development
       VITE_API_BASE_URL: http://localhost:8080
-      # Enable hot reload and other dev features
+      VITE_AUTH_SERVICE_URL: http://localhost:8081
+      VITE_APPOINTMENT_SERVICE_URL: http://localhost:8083
+      VITE_VEHICLE_SERVICE_URL: http://localhost:8084
+      VITE_NOTIFICATION_SERVICE_URL: http://localhost:8085
+      VITE_CHATBOT_SERVICE_URL: http://localhost:8086
       CHOKIDAR_USEPOLLING: true
     volumes:
-      # Mount source code for hot reload
       - ./frontend/src:/app/src
       - ./frontend/public:/app/public
-      - /app/node_modules # Anonymous volume to prevent node_modules override
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.ts:/app/vite.config.ts
+      - ./frontend/tsconfig.json:/app/tsconfig.json
+      - ./frontend/package.json:/app/package.json
 
 volumes:
-  postgres_dev_data:
+  postgres_data_dev:
     driver: local
+  maven_repo:
+    driver: local
+  chatbot_chroma_db_dev:
+    driver: local
+
+networks:
+  servexa-network-dev:
+    driver: bridge
+    name: servexa-network-dev

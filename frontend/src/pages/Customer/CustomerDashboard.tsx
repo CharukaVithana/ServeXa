@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import {
@@ -12,6 +12,7 @@ import {
 import { FaPencilAlt } from "react-icons/fa";
 import Sidebar from "../../components/Sidebar";
 import ProfilePictureModal from "../../components/ProfilePictureModal";
+import appointmentService from "../../services/appointmentService";
 
 interface DashboardStats {
   activeServices: number;
@@ -27,16 +28,35 @@ const CustomerDashboard: React.FC = () => {
   const { user, logout, updateProfilePicture } = useAuth();
   const navigate = useNavigate();
   const [isPictureModalOpen, setPictureModalOpen] = useState(false);
+  const [stats, setStats] = useState<DashboardStats>({
+    activeServices: 0,
+    totalVehicles: 0,
+    pastServices: 0,
+    upcomingAppointments: 0,
+    totalSpent: 0,
+    averageRating: 0,
+    totalServices: 0,
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
-  const stats: DashboardStats = {
-    activeServices: 3,
-    totalVehicles: 2,
-    pastServices: 15,
-    upcomingAppointments: 1,
-    totalSpent: 1230,
-    averageRating: 4.7,
-    totalServices: 22,
-  };
+  useEffect(() => {
+    const fetchStatistics = async () => {
+      if (!user?.id) return;
+      
+      try {
+        setIsLoading(true);
+        const statistics = await appointmentService.getCustomerStatistics(user.id);
+        setStats(statistics);
+      } catch (error) {
+        console.error("Failed to fetch statistics:", error);
+        // Keep default values if the fetch fails
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStatistics();
+  }, [user?.id]);
 
   const handleLogout = async () => {
     await logout();
@@ -91,7 +111,7 @@ const CustomerDashboard: React.FC = () => {
                 onClick={() => navigate("/profile")}
                 className="bg-[#D72638] hover:bg-red-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
               >
-                <FaPencilAlt /> Edit Profile
+                <FaPencilAlt /> Edit Profile 
               </button>
             </div>
           </div>
@@ -132,8 +152,17 @@ const CustomerDashboard: React.FC = () => {
                   <stat.icon size={24} />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold">{stat.value}</h3>
-                  <p className="text-gray-600 text-sm">{stat.label}</p>
+                  {isLoading ? (
+                    <div className="space-y-2">
+                      <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                  ) : (
+                    <>
+                      <h3 className="text-2xl font-bold">{stat.value}</h3>
+                      <p className="text-gray-600 text-sm">{stat.label}</p>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
@@ -203,22 +232,49 @@ const CustomerDashboard: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
               <div>
                 <CreditCard className="mx-auto text-[#D72638] mb-2" size={28} />
-                <p className="text-2xl font-semibold">
-                  ${stats.totalSpent.toFixed(2)}
-                </p>
-                <p className="text-gray-600 text-sm">Total Spent</p>
+                {isLoading ? (
+                  <div className="space-y-2">
+                    <div className="h-8 w-24 bg-gray-200 rounded animate-pulse mx-auto"></div>
+                    <div className="h-4 w-20 bg-gray-200 rounded animate-pulse mx-auto"></div>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-2xl font-semibold">
+                      ${stats.totalSpent.toFixed(2)}
+                    </p>
+                    <p className="text-gray-600 text-sm">Total Spent</p>
+                  </>
+                )}
               </div>
               <div>
                 <Star className="mx-auto text-yellow-500 mb-2" size={28} />
-                <p className="text-2xl font-semibold">
-                  {stats.averageRating.toFixed(1)}
-                </p>
-                <p className="text-gray-600 text-sm">Average Rating</p>
+                {isLoading ? (
+                  <div className="space-y-2">
+                    <div className="h-8 w-16 bg-gray-200 rounded animate-pulse mx-auto"></div>
+                    <div className="h-4 w-20 bg-gray-200 rounded animate-pulse mx-auto"></div>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-2xl font-semibold">
+                      {stats.averageRating.toFixed(1)}
+                    </p>
+                    <p className="text-gray-600 text-sm">Average Rating</p>
+                  </>
+                )}
               </div>
               <div>
                 <Wrench className="mx-auto text-green-500 mb-2" size={28} />
-                <p className="text-2xl font-semibold">{stats.totalServices}</p>
-                <p className="text-gray-600 text-sm">Total Services</p>
+                {isLoading ? (
+                  <div className="space-y-2">
+                    <div className="h-8 w-16 bg-gray-200 rounded animate-pulse mx-auto"></div>
+                    <div className="h-4 w-20 bg-gray-200 rounded animate-pulse mx-auto"></div>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-2xl font-semibold">{stats.totalServices}</p>
+                    <p className="text-gray-600 text-sm">Total Services</p>
+                  </>
+                )}
               </div>
             </div>
           </div>

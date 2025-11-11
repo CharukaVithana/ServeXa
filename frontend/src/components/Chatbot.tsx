@@ -9,9 +9,8 @@ interface Message {
   text: string;
 }
 
-const API_BASE_URL =
-  (typeof window !== "undefined" && (window as any).__API_BASE_URL__) ||
-  "http://127.0.0.1:8000";
+const CHATBOT_API_URL =
+  import.meta.env.VITE_CHATBOT_SERVICE_URL || "http://localhost:8086";
 
 const Chatbot: React.FC = () => {
   const { user } = useAuth(); // get logged-in user
@@ -30,6 +29,16 @@ const Chatbot: React.FC = () => {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Debug: Check localStorage when component mounts
+  useEffect(() => {
+    console.log("=== Chatbot Debug Info ===");
+    console.log("User from context:", user);
+    console.log("localStorage authToken:", localStorage.getItem("authToken"));
+    console.log("localStorage token:", localStorage.getItem("token"));
+    console.log("All localStorage keys:", Object.keys(localStorage));
+    console.log("=========================");
+  }, [user]);
 
   const handleSendMessage = async (message?: string) => {
     const userMessage = message?.trim() || input.trim();
@@ -52,9 +61,19 @@ const Chatbot: React.FC = () => {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/chat`, {
+      // Get auth token from localStorage - check both possible keys
+      const token = localStorage.getItem("authToken") || localStorage.getItem("token");
+      const headers: HeadersInit = { "Content-Type": "application/json" };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+        console.log("Sending request with auth token");
+      } else {
+        console.log("No auth token found in localStorage");
+      }
+
+      const res = await fetch(`${CHATBOT_API_URL}/api/chat`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ question: userMessage, customer_id: customerId }),
       });
 

@@ -1,5 +1,6 @@
 package com.servexa.vehicle.service;
 
+import com.servexa.common.client.NotificationClient;
 import com.servexa.common.exception.BadRequestException;
 import com.servexa.common.exception.ResourceNotFoundException;
 import com.servexa.vehicle.dto.VehicleRequest;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 public class VehicleService {
     
     private final VehicleRepository vehicleRepository;
+    private final NotificationClient notificationClient;
     
     public VehicleResponse createVehicle(VehicleRequest request) {
         log.info("Creating new vehicle for customer: {}", request.getCustomerId());
@@ -42,6 +44,24 @@ public class VehicleService {
         
         Vehicle savedVehicle = vehicleRepository.save(vehicle);
         log.info("Vehicle created successfully with ID: {}", savedVehicle.getId());
+        
+        // Send notification
+        try {
+            String message = String.format("Vehicle %s %s %s (Registration: %s) has been successfully added to your account.",
+                    savedVehicle.getYear(),
+                    savedVehicle.getMake(),
+                    savedVehicle.getModel(),
+                    savedVehicle.getRegistrationNumber());
+            
+            notificationClient.sendNotification(
+                    savedVehicle.getCustomerId().toString(),
+                    "Vehicle Added Successfully",
+                    message,
+                    NotificationClient.NotificationType.VEHICLE_ADDED
+            );
+        } catch (Exception e) {
+            log.error("Failed to send notification for vehicle creation", e);
+        }
         
         return mapToResponse(savedVehicle);
     }

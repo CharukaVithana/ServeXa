@@ -60,6 +60,3 @@ logging:
     com.servexa.auth: DEBUG
     org.springframework.security: DEBUG
 
-services:
-  customer-service:
-    url: http://localhost:8082

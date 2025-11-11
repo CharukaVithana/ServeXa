@@ -5,6 +5,7 @@ import AddVehicleModal from '../../components/AddVehicleModal';
 import type { Vehicle } from '../../types/auth';
 import EditVehicleModal from '../../components/EditVehicleModal';
 import RemoveVehicleModal from '../../components/RemoveVehicleModal';
+import toast from 'react-hot-toast';
 
 const VehicleCard = ({ vehicle, onEdit, onRemove }: { vehicle: Vehicle, onEdit: (v: Vehicle) => void, onRemove: (v: Vehicle) => void }) => (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col">
@@ -88,9 +89,10 @@ const MyVehicles = () => {
                     try {
                         await addVehicle(vehicle);
                         closeModals();
+                        toast.success('Vehicle successfully added!');
                     } catch (error) {
                         console.error('Error adding vehicle:', error);
-                        // You might want to show an error message to the user here
+                        toast.error('Failed to add vehicle. Please try again.');
                     }
                 }} 
             />

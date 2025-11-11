@@ -107,16 +107,19 @@ const Notifications = () => {
         setLoading(true);
         const token = authService.getStoredToken();
         const base =
-          import.meta.env.VITE_CUSTOMER_API || "http://127.0.0.1:8082";
+          import.meta.env.VITE_NOTIFICATION_API_URL || "http://127.0.0.1:8085";
         const res = await axios.get(`${base}/api/notifications/me`, {
           headers: {
             Authorization: token ? `Bearer ${token}` : "",
           },
         });
 
+        // Extract data from ApiResponse wrapper
+        const response = res.data;
+        const data = response?.data?.content || response?.data || [];
+        
         // Map backend Notification -> local Notification shape
-        const data = (res.data || []) as any[];
-        const mapped = data.map(
+        const mapped = (Array.isArray(data) ? data : []).map(
           (n) =>
             ({
               id: n.id,
@@ -202,11 +205,16 @@ const Notifications = () => {
   const iconFor = (n: Notification) => {
     switch (n.type) {
       case "reminder":
+      case "APPOINTMENT_REMINDER":
         return <FaExclamationTriangle />;
       case "completed":
+      case "SERVICE_COMPLETED":
         return <FaCheckCircle />;
       case "offer":
+      case "PROMOTION":
         return <FaTag />;
+      case "VEHICLE_ADDED":
+        return <FaCheckCircle />;
       default:
         return <FaRegClock />;
     }

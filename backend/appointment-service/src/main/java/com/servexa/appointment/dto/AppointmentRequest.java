@@ -26,8 +26,10 @@ public class AppointmentRequest {
     @Pattern(regexp = "^[0-9+\\-\\s\\(\\)]+$", message = "Phone number must contain only digits, spaces, parentheses, plus sign, and hyphens")
     private String phoneNumber;
 
-    @NotBlank(message = "Vehicle type is required")
-    private String vehicleType;
+    @NotNull(message = "Vehicle ID is required")
+    private String vehicleId;
+    
+    private String vehicleType; // This will be fetched from vehicle service
 
     @NotBlank(message = "Service type is required")
     private String serviceType;

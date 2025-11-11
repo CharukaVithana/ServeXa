@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaUser, FaPhone, FaCalendarAlt, FaCar, FaClock } from 'react-icons/fa';
+import { FaUser, FaPhone, FaCalendarAlt, FaCar, FaClock, FaPlus } from 'react-icons/fa';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import appointmentService from '../../services/appointmentService';
 import { toast } from 'react-hot-toast';
+import AddVehicleModal from '../../components/AddVehicleModal';
+import type { Vehicle } from '../../types/auth';
 
 interface BookingFormData {
     fullName: string;
     phoneNumber: string;
-    vehicleType: string;
+    vehicleId: string;
     serviceType: string;
     bookingDate: string;
     bookingTime: string;
@@ -21,7 +23,7 @@ interface BookingFormData {
 interface ValidationErrors {
     fullName?: string;
     phoneNumber?: string;
-    vehicleType?: string;
+    vehicleId?: string;
     serviceType?: string;
     bookingDate?: string;
     bookingTime?: string;
@@ -29,20 +31,23 @@ interface ValidationErrors {
 }
 
 const BookAppointment = () => {
-    const { user } = useAuth();
+    const { user, addVehicle } = useAuth();
     const navigate = useNavigate();
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [showCalendar, setShowCalendar] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+    const [isAddVehicleModalOpen, setIsAddVehicleModalOpen] = useState(false);
     const datePickerRef = useRef<HTMLDivElement>(null);
     const timePickerRef = useRef<HTMLDivElement>(null);
+    
+    const vehicles = user?.vehicles || [];
     
     const [formData, setFormData] = useState<BookingFormData>({
         fullName: user?.fullName || '',
         phoneNumber: user?.phoneNumber || '',
-        vehicleType: '',
+        vehicleId: '',
         serviceType: '',
         bookingDate: '',
         bookingTime: '',
@@ -124,9 +129,22 @@ const BookAppointment = () => {
         return phone;
     };
 
+    // Check if user has vehicles on component mount
+    useEffect(() => {
+        if (user && vehicles.length === 0) {
+            toast.error('Please add a vehicle first before booking an appointment', { duration: 5000 });
+        }
+    }, [user, vehicles.length]);
+
     // Validate form fields
     const validateForm = (): boolean => {
         const errors: ValidationErrors = {};
+        
+        // Check if user has vehicles first
+        if (vehicles.length === 0) {
+            toast.error('Please add a vehicle before booking an appointment');
+            return false;
+        }
         
         // Validate full name
         if (!formData.fullName.trim()) {
@@ -143,9 +161,9 @@ const BookAppointment = () => {
             }
         }
         
-        // Validate vehicle type
-        if (!formData.vehicleType.trim()) {
-            errors.vehicleType = 'Vehicle type is required';
+        // Validate vehicle selection
+        if (!formData.vehicleId) {
+            errors.vehicleId = 'Please select a vehicle';
         }
         
         // Validate service type
@@ -196,10 +214,17 @@ const BookAppointment = () => {
             // Format phone number before sending
             const formattedPhoneNumber = formatPhoneNumber(formData.phoneNumber);
             
+            // Get the selected vehicle details
+            const selectedVehicle = vehicles.find(v => v.id === formData.vehicleId);
+            const vehicleType = selectedVehicle 
+                ? `${selectedVehicle.make} ${selectedVehicle.model} ${selectedVehicle.year}`
+                : `Vehicle ID: ${formData.vehicleId}`;
+            
             const appointmentData = {
                 fullName: formData.fullName.trim(),
                 phoneNumber: formattedPhoneNumber,
-                vehicleType: formData.vehicleType.trim(),
+                vehicleId: formData.vehicleId,
+                vehicleType: vehicleType,
                 serviceType: formData.serviceType.trim(),
                 bookingDateTime,
                 additionalNote: formData.additionalNote.trim(),
@@ -377,23 +402,41 @@ const BookAppointment = () => {
                             )}
                         </div>
 
-                        {/* Vehicle Type */}
+                        {/* Vehicle Selection */}
                         <div>
                             <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                 <FaCar className="text-gray-500" />
-                                Vehicle Type
+                                Select Vehicle
                             </label>
-                            <input
-                                type="text"
-                                name="vehicleType"
-                                value={formData.vehicleType}
-                                onChange={handleInputChange}
-                                placeholder="Toyota Corolla 2022"
-                                className={`w-full px-4 py-2 border ${validationErrors.vehicleType ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent`}
-                                required
-                            />
-                            {validationErrors.vehicleType && (
-                                <p className="mt-1 text-sm text-red-600">{validationErrors.vehicleType}</p>
+                            {vehicles.length > 0 ? (
+                                <select
+                                    name="vehicleId"
+                                    value={formData.vehicleId}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-4 py-2 border ${validationErrors.vehicleId ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent`}
+                                    required
+                                >
+                                    <option value="">Select a vehicle</option>
+                                    {vehicles.map(vehicle => (
+                                        <option key={vehicle.id} value={vehicle.id}>
+                                            {vehicle.make} {vehicle.model} ({vehicle.year}) - {vehicle.registrationNumber}
+                                        </option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <p className="text-sm text-gray-500">No vehicles added yet.</p>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsAddVehicleModalOpen(true)}
+                                        className="text-red-600 hover:text-red-700 font-semibold text-sm flex items-center gap-1"
+                                    >
+                                        <FaPlus className="text-xs" /> Add Vehicle
+                                    </button>
+                                </div>
+                            )}
+                            {validationErrors.vehicleId && (
+                                <p className="mt-1 text-sm text-red-600">{validationErrors.vehicleId}</p>
                             )}
                         </div>
 
@@ -533,6 +576,26 @@ const BookAppointment = () => {
                         </form>
                 </div>
             </div>
+            
+            {/* Add Vehicle Modal */}
+            <AddVehicleModal 
+                isOpen={isAddVehicleModalOpen} 
+                onClose={() => setIsAddVehicleModalOpen(false)} 
+                onSave={async (vehicle) => {
+                    try {
+                        await addVehicle(vehicle);
+                        setIsAddVehicleModalOpen(false);
+                        toast.success('Vehicle added successfully! You can now select it.');
+                        // Auto-select the newly added vehicle if it's the first one
+                        if (vehicles.length === 0 && user?.vehicles?.[0]) {
+                            setFormData(prev => ({ ...prev, vehicleId: user.vehicles[0].id }));
+                        }
+                    } catch (error) {
+                        console.error('Error adding vehicle:', error);
+                        toast.error('Failed to add vehicle. Please try again.');
+                    }
+                }} 
+            />
         </div>
     );
 };

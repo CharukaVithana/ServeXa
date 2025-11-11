@@ -36,6 +36,23 @@ public class VehicleController {
         );
     }
     
+    @GetMapping("/customer/{customerId}/count")
+    public ResponseEntity<ApiResponse<Integer>> getVehicleCountByCustomerId(@PathVariable String customerId) {
+        try {
+            Long customerIdLong = Long.parseLong(customerId);
+            List<VehicleResponse> vehicles = vehicleService.getVehiclesByCustomerId(customerIdLong);
+            return ResponseEntity.ok(
+                    ApiResponse.success(vehicles.size(), "Vehicle count fetched successfully")
+            );
+        } catch (NumberFormatException e) {
+            // If customerId is a UUID string, we can't convert it to Long
+            // Return 0 for now as vehicles are stored with Long customerId
+            return ResponseEntity.ok(
+                    ApiResponse.success(0, "Vehicle count fetched successfully")
+            );
+        }
+    }
+    
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<VehicleResponse>> getVehicleById(@PathVariable Long id) {
         VehicleResponse response = vehicleService.getVehicleById(id);
