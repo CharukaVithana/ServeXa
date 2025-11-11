@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FaCheckCircle, FaEye } from 'react-icons/fa';
 import appointmentService from '../../services/appointmentService';
 import authService from '../../services/authService';
+import vehicleService from '../../services/vehicleService';
 
 const ServiceHistory = () => {
     const [history, setHistory] = useState<any[]>([]);
@@ -25,23 +26,42 @@ const ServiceHistory = () => {
 
             // Fetch customer appointments
             const appointments = await appointmentService.getCustomerAppointments(user.id);
+            console.log('All appointments:', appointments);
+            console.log('Appointment statuses:', appointments.map(a => a.status));
+            
+            // Fetch customer vehicles
+            const vehicles = await vehicleService.getVehiclesByCustomerId(user.id);
+            
+            // Create a map of vehicle IDs to vehicle details
+            const vehicleMap = new Map();
+            vehicles.forEach(vehicle => {
+                vehicleMap.set(vehicle.id, vehicle);
+            });
             
             // Filter only completed appointments and format them
             const completedServices = appointments
-                .filter(appointment => appointment.status.toLowerCase() === 'completed')
-                .map(appointment => ({
-                    id: appointment.id,
-                    date: new Date(appointment.bookingDateTime).toLocaleDateString('en-US', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                    }),
-                    vehicle: `Vehicle ${appointment.vehicleId}`, // We'll need to fetch vehicle details
-                    service: appointment.serviceType,
-                    status: appointment.status,
-                    cost: 'N/A', // Cost might not be available in the current backend
-                    employeeName: appointment.employeeName || 'N/A'
-                }))
+                .filter(appointment => appointment.status === 'COMPLETED')
+                .map(appointment => {
+                    const vehicle = vehicleMap.get(appointment.vehicleId);
+                    const vehicleDisplay = vehicle 
+                        ? `${vehicle.year || ''} ${vehicle.make} ${vehicle.model}`.trim()
+                        : `Vehicle ${appointment.vehicleId}`;
+                    
+                    return {
+                        id: appointment.id,
+                        date: new Date(appointment.bookingDateTime).toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                        }),
+                        vehicle: vehicleDisplay,
+                        registrationNumber: vehicle?.registrationNumber || 'N/A',
+                        service: appointment.serviceType,
+                        status: appointment.status,
+                        cost: 'N/A', // Cost might not be available in the current backend
+                        employeeName: appointment.employeeName || 'N/A'
+                    };
+                })
                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
             setHistory(completedServices);
@@ -83,6 +103,7 @@ const ServiceHistory = () => {
                             <tr className="text-sm font-semibold text-gray-600">
                                 <th className="p-4">Date</th>
                                 <th className="p-4">Vehicle</th>
+                                <th className="p-4">Registration</th>
                                 <th className="p-4">Service Type</th>
                                 <th className="p-4">Status</th>
                                 <th className="p-4">Technician</th>
@@ -94,6 +115,7 @@ const ServiceHistory = () => {
                                 <tr key={item.id} className="border-b border-gray-200">
                                     <td className="p-4">{item.date}</td>
                                     <td className="p-4">{item.vehicle}</td>
+                                    <td className="p-4">{item.registrationNumber}</td>
                                     <td className="p-4">{item.service}</td>
                                     <td className="p-4">
                                         <span className="flex items-center gap-2 text-green-600">

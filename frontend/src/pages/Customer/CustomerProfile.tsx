@@ -1,17 +1,44 @@
-import React, { useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { FaUser, FaCar, FaHistory, FaCalendarAlt, FaBell, FaPencilAlt } from 'react-icons/fa';
 import { useAuth } from '../../hooks/useAuth';
 import ProfilePictureModal from '../../components/ProfilePictureModal';
 import Sidebar from '../../components/Sidebar';
+import Badge from '../../components/Badge';
+import { useNotificationCount } from '../../hooks/useNotificationCount';
+import { useAppointmentCount } from '../../hooks/useAppointmentCount';
 
 const CustomerProfile = () => {
     const { user, logout, updateProfilePicture } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const [isPictureModalOpen, setPictureModalOpen] = useState(false);
+    
+    // Initialize visited tabs from localStorage
+    const [visitedTabs, setVisitedTabs] = useState<Set<string>>(() => {
+        const stored = localStorage.getItem('visitedTabs');
+        return stored ? new Set(JSON.parse(stored)) : new Set(['personal-info']);
+    });
+    
+    const { unreadCount: notificationCount, refetch: refetchNotifications } = useNotificationCount();
+    const { counts: appointmentCounts, refetch: refetchAppointments } = useAppointmentCount();
     
     // Debug: Log user data
     console.log('Current user data:', user);
+
+    // Track visited tabs
+    useEffect(() => {
+        const currentTab = location.pathname.split('/').pop();
+        const validTabs = ['personal-info', 'my-vehicles', 'service-history', 'appointments', 'notifications'];
+        if (currentTab && validTabs.includes(currentTab)) {
+            setVisitedTabs(prev => {
+                const newSet = new Set([...prev, currentTab]);
+                // Save to localStorage
+                localStorage.setItem('visitedTabs', JSON.stringify([...newSet]));
+                return newSet;
+            });
+        }
+    }, [location.pathname]);
 
     const handleLogout = async () => {
         await logout();
@@ -22,8 +49,8 @@ const CustomerProfile = () => {
         { to: 'personal-info', icon: <FaUser />, label: 'Personal Info' },
         { to: 'my-vehicles', icon: <FaCar />, label: 'My Vehicles' },
         { to: 'service-history', icon: <FaHistory />, label: 'Service History' },
-        { to: 'appointments', icon: <FaCalendarAlt />, label: 'Appointments' },
-        { to: 'notifications', icon: <FaBell />, label: 'Notifications' },
+        { to: 'appointments', icon: <FaCalendarAlt />, label: 'Appointments', badge: appointmentCounts.upcoming },
+        { to: 'notifications', icon: <FaBell />, label: 'Notifications', badge: notificationCount },
     ];
 
     const getAvatarUrl = () => {
@@ -74,22 +101,34 @@ const CustomerProfile = () => {
 
                 {/* Navigation Tabs */}
                 <nav className="flex flex-wrap border-b border-gray-200">
-                    {navItems.map((item) => (
-                        <NavLink
-                            key={item.to}
-                            to={item.to}
-                            className={({ isActive }) =>
-                                `flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors ${
-                                    isActive
-                                        ? 'border-b-2 border-[#D72638] text-[#D72638]'
-                                        : 'text-gray-500 hover:text-gray-800'
-                                }`
-                            }
-                        >
-                            {item.icon}
-                            <span>{item.label}</span>
-                        </NavLink>
-                    ))}
+                    {navItems.map((item) => {
+                        const isUnvisited = item.badge && item.badge > 0 && !visitedTabs.has(item.to);
+                        return (
+                            <NavLink
+                                key={item.to}
+                                to={item.to}
+                                className={({ isActive }) =>
+                                    `flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors relative ${
+                                        isActive
+                                            ? 'border-b-2 border-[#D72638] text-[#D72638]'
+                                            : 'text-gray-500 hover:text-gray-800'
+                                    }`
+                                }
+                            >
+                                {item.icon}
+                                <span>{item.label}</span>
+                                {item.badge !== undefined && item.badge > 0 && (
+                                    <Badge 
+                                        count={item.badge} 
+                                        variant={isUnvisited ? 'active' : 'default'} 
+                                    />
+                                )}
+                                {isUnvisited && (
+                                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                                )}
+                            </NavLink>
+                        );
+                    })}
                 </nav>
 
                 {/* Main Content Area */}

@@ -117,7 +117,7 @@ class AppointmentServiceClient(BaseServiceClient):
         if token:
             headers["Authorization"] = f"Bearer {token}"
         
-        params = {"customerId": customer_id}
+        params = {}
         if status:
             params["status"] = status
         if from_date:
@@ -125,12 +125,17 @@ class AppointmentServiceClient(BaseServiceClient):
         if to_date:
             params["toDate"] = to_date.isoformat()
         
-        return await self._make_request(
+        response = await self._make_request(
             "GET",
-            "/api/appointments",
+            f"/api/appointments/customer/{customer_id}",
             headers=headers,
             params=params
         )
+        
+        # Extract data from response wrapper
+        if isinstance(response, dict) and 'data' in response:
+            return response['data'] if response['data'] else []
+        return response if isinstance(response, list) else []
     
     async def get_appointment_by_id(self, appointment_id: str, token: Optional[str] = None) -> Dict[str, Any]:
         """Get appointment details by ID"""
@@ -170,11 +175,16 @@ class VehicleServiceClient(BaseServiceClient):
         if token:
             headers["Authorization"] = f"Bearer {token}"
         
-        return await self._make_request(
+        response = await self._make_request(
             "GET",
             f"/api/vehicles/customer/{customer_id}",
             headers=headers
         )
+        
+        # Extract data from response wrapper
+        if isinstance(response, dict) and 'data' in response:
+            return response['data'] if response['data'] else []
+        return response if isinstance(response, list) else []
     
     async def get_vehicle_by_id(self, vehicle_id: str, token: Optional[str] = None) -> Dict[str, Any]:
         """Get vehicle details by ID"""

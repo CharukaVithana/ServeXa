@@ -67,7 +67,7 @@ public class VehicleService {
     }
     
     @Transactional(readOnly = true)
-    public List<VehicleResponse> getVehiclesByCustomerId(Long customerId) {
+    public List<VehicleResponse> getVehiclesByCustomerId(String customerId) {
         log.info("Fetching vehicles for customer: {}", customerId);
         List<Vehicle> vehicles = vehicleRepository.findByCustomerId(customerId);
         return vehicles.stream()
@@ -114,7 +114,7 @@ public class VehicleService {
         return mapToResponse(updatedVehicle);
     }
     
-    public void deleteVehicle(Long id, Long customerId) {
+    public void deleteVehicle(Long id, String customerId) {
         log.info("Deleting vehicle with ID: {} for customer: {}", id, customerId);
         
         Vehicle vehicle = vehicleRepository.findByIdAndCustomerId(id, customerId)

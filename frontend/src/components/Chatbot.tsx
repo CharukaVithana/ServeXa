@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import type { KeyboardEvent } from "react";
 import { MessageCircle, X, Send } from "lucide-react";
 import chatbotIcon from "../assets/chatbotIcon.png";
-import { useAuth } from "../hooks/useAuth"; 
+import { useAuth } from "../hooks/useAuth";
+import ReactMarkdown from "react-markdown";
+import { useNavigate } from "react-router-dom"; 
 
 interface Message {
   sender: "user" | "bot";
@@ -14,6 +16,7 @@ const CHATBOT_API_URL =
 
 const Chatbot: React.FC = () => {
   const { user } = useAuth(); // get logged-in user
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -143,7 +146,33 @@ const Chatbot: React.FC = () => {
                       : "bg-white text-gray-800 border border-gray-200"
                   }`}
                 >
-                  {msg.text}
+                  {msg.sender === "user" ? (
+                    msg.text
+                  ) : (
+                    <ReactMarkdown
+                      components={{
+                        a: ({ href, children }) => (
+                          <a
+                            href={href}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              if (href) {
+                                navigate(href);
+                                setIsOpen(false);
+                              }
+                            }}
+                            className="text-blue-600 hover:text-blue-800 underline cursor-pointer"
+                          >
+                            {children}
+                          </a>
+                        ),
+                        p: ({ children }) => <p className="mb-2">{children}</p>,
+                        strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                      }}
+                    >
+                      {msg.text}
+                    </ReactMarkdown>
+                  )}
                 </div>
               </div>
             ))}

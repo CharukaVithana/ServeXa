@@ -47,8 +47,6 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
     ],
     admin: [
       { name: "Dashboard", icon: LayoutDashboard, path: "/admin-dashboard" },
-      { name: "Users", icon: Users, path: "/admin/users" },
-      { name: "Reports", icon: BarChart, path: "/admin/reports" },
       { name: "Appointments", icon: Calendar, path: "/admin/appointments" },
       { name: "Settings", icon: Settings, path: "/admin/settings" },
     ],

@@ -32,17 +32,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   });
 
   // Helper function to get customer ID from user
-  const getCustomerId = useCallback((userId: string): number | null => {
+  const getCustomerId = useCallback((userId: string): string | null => {
     // The user ID from auth service is the customer ID
-    const parsedId = parseInt(userId);
-    if (!isNaN(parsedId)) {
-      return parsedId;
-    }
-    return null;
+    return userId || null;
   }, []);
 
   // Fetch vehicles for a user
-  const fetchVehicles = useCallback(async (customerId: number) => {
+  const fetchVehicles = useCallback(async (customerId: string) => {
     try {
       const vehicles = await vehicleService.getVehiclesByCustomerId(customerId);
       setState((prevState) => {
@@ -123,6 +119,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         };
 
         // Store user data in localStorage for other services to use
+        // Note: Exclude imageUrl to avoid localStorage quota issues
         localStorage.setItem(
           "user",
           JSON.stringify({
@@ -133,7 +130,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             role: response.role,
             phoneNumber: response.phoneNumber,
             address: response.address,
-            imageUrl: response.imageUrl,
+            // imageUrl is excluded to prevent localStorage quota issues
           })
         );
 

@@ -18,7 +18,7 @@ interface VehicleResponse {
   imageUrl: string;
   year?: number;
   color?: string;
-  customerId: number;
+  customerId: string;
 }
 
 interface VehicleRequest {
@@ -28,7 +28,7 @@ interface VehicleRequest {
   imageUrl?: string;
   year?: number;
   color?: string;
-  customerId: number;
+  customerId: string;
 }
 
 class VehicleService {
@@ -67,7 +67,7 @@ class VehicleService {
   /**
    * Convert frontend Vehicle to backend VehicleRequest
    */
-  private mapToRequest(vehicle: Omit<Vehicle, 'id'>, customerId: number): VehicleRequest {
+  private mapToRequest(vehicle: Omit<Vehicle, 'id'>, customerId: string): VehicleRequest {
     return {
       make: vehicle.make,
       model: vehicle.model,
@@ -82,7 +82,7 @@ class VehicleService {
   /**
    * Get all vehicles for a customer
    */
-  async getVehiclesByCustomerId(customerId: number): Promise<Vehicle[]> {
+  async getVehiclesByCustomerId(customerId: string): Promise<Vehicle[]> {
     try {
       const response = await fetch(`${API_BASE_URL}/api/vehicles/customer/${customerId}`, {
         method: 'GET',
@@ -107,7 +107,7 @@ class VehicleService {
   /**
    * Add a new vehicle
    */
-  async addVehicle(vehicleData: Omit<Vehicle, 'id'>, customerId: number): Promise<Vehicle> {
+  async addVehicle(vehicleData: Omit<Vehicle, 'id'>, customerId: string): Promise<Vehicle> {
     try {
       const request = this.mapToRequest(vehicleData, customerId);
       
@@ -128,7 +128,7 @@ class VehicleService {
   /**
    * Update an existing vehicle
    */
-  async updateVehicle(vehicleId: string, vehicleData: Omit<Vehicle, 'id'>, customerId: number): Promise<Vehicle> {
+  async updateVehicle(vehicleId: string, vehicleData: Omit<Vehicle, 'id'>, customerId: string): Promise<Vehicle> {
     try {
       const request = this.mapToRequest(vehicleData, customerId);
       
@@ -149,7 +149,7 @@ class VehicleService {
   /**
    * Delete a vehicle
    */
-  async deleteVehicle(vehicleId: string, customerId: number): Promise<void> {
+  async deleteVehicle(vehicleId: string, customerId: string): Promise<void> {
     try {
       const response = await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}/customer/${customerId}`, {
         method: 'DELETE',

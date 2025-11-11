@@ -29,7 +29,7 @@ public class VehicleController {
     }
     
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<ApiResponse<List<VehicleResponse>>> getVehiclesByCustomerId(@PathVariable Long customerId) {
+    public ResponseEntity<ApiResponse<List<VehicleResponse>>> getVehiclesByCustomerId(@PathVariable String customerId) {
         List<VehicleResponse> vehicles = vehicleService.getVehiclesByCustomerId(customerId);
         return ResponseEntity.ok(
                 ApiResponse.success(vehicles, "Vehicles fetched successfully")
@@ -38,19 +38,10 @@ public class VehicleController {
     
     @GetMapping("/customer/{customerId}/count")
     public ResponseEntity<ApiResponse<Integer>> getVehicleCountByCustomerId(@PathVariable String customerId) {
-        try {
-            Long customerIdLong = Long.parseLong(customerId);
-            List<VehicleResponse> vehicles = vehicleService.getVehiclesByCustomerId(customerIdLong);
-            return ResponseEntity.ok(
-                    ApiResponse.success(vehicles.size(), "Vehicle count fetched successfully")
-            );
-        } catch (NumberFormatException e) {
-            // If customerId is a UUID string, we can't convert it to Long
-            // Return 0 for now as vehicles are stored with Long customerId
-            return ResponseEntity.ok(
-                    ApiResponse.success(0, "Vehicle count fetched successfully")
-            );
-        }
+        List<VehicleResponse> vehicles = vehicleService.getVehiclesByCustomerId(customerId);
+        return ResponseEntity.ok(
+                ApiResponse.success(vehicles.size(), "Vehicle count fetched successfully")
+        );
     }
     
     @GetMapping("/{id}")
@@ -74,7 +65,7 @@ public class VehicleController {
     @DeleteMapping("/{id}/customer/{customerId}")
     public ResponseEntity<ApiResponse<Void>> deleteVehicle(
             @PathVariable Long id,
-            @PathVariable Long customerId) {
+            @PathVariable String customerId) {
         vehicleService.deleteVehicle(id, customerId);
         return ResponseEntity.ok(
                 ApiResponse.success(null, "Vehicle deleted successfully")

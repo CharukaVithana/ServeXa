@@ -16,8 +16,8 @@ public class Vehicle {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(nullable = false)
-    private Long customerId;
+    @Column(nullable = false, length = 36)
+    private String customerId;
     
     @Column(nullable = false, unique = true)
     private String registrationNumber;

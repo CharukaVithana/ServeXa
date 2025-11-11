@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class VehicleRequest {
     
-    @NotNull(message = "Customer ID is required")
-    private Long customerId;
+    @NotBlank(message = "Customer ID is required")
+    private String customerId;
     
     @NotBlank(message = "Registration number is required")
     private String registrationNumber;

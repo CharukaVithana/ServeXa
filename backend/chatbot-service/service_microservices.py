@@ -166,9 +166,6 @@ async def query_microservices(question: str, customer_id: Optional[str] = None, 
                         return "You don't have any appointments currently."
                 except Exception as e:
                     logger.error(f"Error fetching appointments: {e}")
-                    # Check if it's a UUID format issue
-                    if "NumberFormatException" in str(e) or "type 'java.lang.Long'" in str(e):
-                        return "I'm having trouble accessing appointment data with your user ID format. Please contact support."
                     return "I'm having trouble accessing appointment information right now. Please try again later."
             else:
                 # Get general statistics
@@ -179,11 +176,6 @@ async def query_microservices(question: str, customer_id: Optional[str] = None, 
         elif any(keyword in question_lower for keyword in ['vehicle', 'car', 'registration']):
             if customer_id:
                 try:
-                    # Check if customer_id is a UUID (string) or numeric
-                    if '-' in str(customer_id):
-                        # UUID format - vehicle service expects numeric IDs
-                        return "I'm sorry, but I cannot access vehicle information with your current user ID format. Please contact support for assistance."
-                    
                     vehicles = await service_clients.vehicle.get_customer_vehicles(customer_id, token)
                     if vehicles:
                         return format_vehicles_response(question, vehicles)
@@ -222,15 +214,78 @@ def format_appointments_response(question: str, appointments: list) -> str:
         return "No appointments found."
     
     total = len(appointments)
-    if total == 1:
-        apt = appointments[0]
-        return f"You have 1 appointment: {apt.get('serviceType', 'Service')} on {apt.get('appointmentDate', 'N/A')} at {apt.get('appointmentTime', 'N/A')}. Status: {apt.get('status', 'N/A')}."
-    else:
-        upcoming = [a for a in appointments if a.get('status') == 'SCHEDULED']
-        if upcoming:
-            return f"You have {total} appointments, {len(upcoming)} upcoming. Your next appointment is on {upcoming[0].get('appointmentDate', 'N/A')}."
-        else:
-            return f"You have {total} appointments in total."
+    
+    # Sort appointments by date (most recent/upcoming first)
+    sorted_appointments = sorted(appointments, 
+                               key=lambda x: x.get('bookingDateTime', ''), 
+                               reverse=False)
+    
+    # Separate by status
+    scheduled = [a for a in sorted_appointments if a.get('status') == 'SCHEDULED']
+    completed = [a for a in sorted_appointments if a.get('status') == 'COMPLETED']
+    cancelled = [a for a in sorted_appointments if a.get('status') == 'CANCELLED']
+    
+    response_lines = [f"You have **{total}** total appointments:"]
+    
+    # Show scheduled appointments first
+    if scheduled:
+        response_lines.append(f"\n**Upcoming ({len(scheduled)}):** [View All Appointments →](/customer/profile/appointments)")
+        for i, apt in enumerate(scheduled[:5], 1):  # Show first 5
+            # Parse bookingDateTime to format date and time nicely
+            booking_dt = apt.get('bookingDateTime', '')
+            if booking_dt:
+                try:
+                    from datetime import datetime
+                    dt = datetime.fromisoformat(booking_dt.replace('Z', '+00:00'))
+                    date_str = dt.strftime('%Y-%m-%d')
+                    time_str = dt.strftime('%H:%M')
+                except:
+                    date_str = 'N/A'
+                    time_str = 'N/A'
+            else:
+                date_str = 'N/A'
+                time_str = 'N/A'
+                
+            response_lines.append(
+                f"{i}. {apt.get('serviceType', 'Service')} - "
+                f"{date_str} at {time_str}"
+            )
+            if apt.get('mechanicName'):
+                response_lines[-1] += f" with {apt.get('mechanicName')}"
+    
+    # Show completed appointments
+    if completed and len(response_lines) < 10:  # Limit total response length
+        response_lines.append(f"\n**Completed ({len(completed)}):** [View Service History →](/customer/profile/service-history)")
+        for i, apt in enumerate(completed[:3], 1):  # Show first 3
+            # Parse bookingDateTime to format date and time nicely
+            booking_dt = apt.get('bookingDateTime', '')
+            if booking_dt:
+                try:
+                    from datetime import datetime
+                    dt = datetime.fromisoformat(booking_dt.replace('Z', '+00:00'))
+                    date_str = dt.strftime('%Y-%m-%d')
+                    time_str = dt.strftime('%H:%M')
+                except:
+                    date_str = 'N/A'
+                    time_str = 'N/A'
+            else:
+                date_str = 'N/A'
+                time_str = 'N/A'
+                
+            response_lines.append(
+                f"{i}. {apt.get('serviceType', 'Service')} - "
+                f"{date_str} at {time_str}"
+            )
+    
+    # Show cancelled count if any
+    if cancelled:
+        response_lines.append(f"\n**Cancelled: {len(cancelled)}**")
+    
+    # Add helpful links at the bottom
+    response_lines.append("\n---")
+    response_lines.append("[Book New Appointment](/cus-dashboard/appointments) | [View All Appointments](/customer/profile/appointments) | [Service History](/customer/profile/service-history)")
+    
+    return "\n".join(response_lines)
 
 def format_vehicles_response(question: str, vehicles: list) -> str:
     """Format vehicle data into a friendly response"""

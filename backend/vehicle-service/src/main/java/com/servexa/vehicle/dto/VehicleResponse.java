@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class VehicleResponse {
     
     private Long id;
-    private Long customerId;
+    private String customerId;
     private String registrationNumber;
     private String make;
     private String model;
