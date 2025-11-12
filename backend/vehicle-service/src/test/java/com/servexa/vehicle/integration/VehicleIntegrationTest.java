@@ -26,79 +26,67 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 class VehicleIntegrationTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+        @Autowired
+        private ObjectMapper objectMapper;
 
-    @Autowired
-    private VehicleRepository vehicleRepository;
+        @Autowired
+        private VehicleRepository vehicleRepository;
 
-    private VehicleRequest vehicleRequest;
-    private final String customerId = "123e4567-e89b-12d3-a456-426614174000";
+        private VehicleRequest vehicleRequest;
+        private final String customerId = "123e4567-e89b-12d3-a456-426614174000";
 
-    @BeforeEach
-    void setUp() {
-        vehicleRepository.deleteAll();
-        
-        vehicleRequest = new VehicleRequest();
-        vehicleRequest.setCustomerId(customerId);
-        vehicleRequest.setRegistrationNumber("ABC123");
-        vehicleRequest.setMake("Toyota");
-        vehicleRequest.setModel("Camry");
-        vehicleRequest.setYear(2023);
-        vehicleRequest.setColor("Blue");
-        vehicleRequest.setVin("1HGBH41JXMN109186");
-        vehicleRequest.setImageUrl("http://example.com/image.jpg");
-    }
+        @BeforeEach
+        void setUp() {
+                vehicleRepository.deleteAll();
 
+                vehicleRequest = new VehicleRequest();
+                vehicleRequest.setCustomerId(customerId);
+                vehicleRequest.setRegistrationNumber("ABC123");
+                vehicleRequest.setMake("Toyota");
+                vehicleRequest.setModel("Camry");
+                vehicleRequest.setYear(2023);
+                vehicleRequest.setColor("Blue");
+                vehicleRequest.setVin("1HGBH41JXMN109186");
+                vehicleRequest.setImageUrl("http://example.com/image.jpg");
+        }
 
+        @Test
+        void testValidationErrors() throws Exception {
+                // Test missing registration number
+                VehicleRequest invalidRequest = new VehicleRequest();
+                invalidRequest.setCustomerId(customerId);
+                invalidRequest.setRegistrationNumber("");
+                invalidRequest.setMake("Toyota");
+                invalidRequest.setModel("Camry");
+                invalidRequest.setYear(2023);
 
+                mockMvc.perform(post("/api/vehicles")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(invalidRequest)))
+                                .andExpect(status().isBadRequest());
 
+                // Test invalid year
+                invalidRequest = new VehicleRequest();
+                invalidRequest.setCustomerId(customerId);
+                invalidRequest.setRegistrationNumber("TEST123");
+                invalidRequest.setMake("Toyota");
+                invalidRequest.setModel("Camry");
+                invalidRequest.setYear(1800); // Too old
 
+                mockMvc.perform(post("/api/vehicles")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(invalidRequest)))
+                                .andExpect(status().isBadRequest());
+        }
 
-
-
-
-
-
-    @Test
-    void testValidationErrors() throws Exception {
-        // Test missing registration number
-        VehicleRequest invalidRequest = new VehicleRequest();
-        invalidRequest.setCustomerId(customerId);
-        invalidRequest.setRegistrationNumber("");
-        invalidRequest.setMake("Toyota");
-        invalidRequest.setModel("Camry");
-        invalidRequest.setYear(2023);
-
-        mockMvc.perform(post("/api/vehicles")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidRequest)))
-                .andExpect(status().isBadRequest());
-
-        // Test invalid year
-        invalidRequest = new VehicleRequest();
-        invalidRequest.setCustomerId(customerId);
-        invalidRequest.setRegistrationNumber("TEST123");
-        invalidRequest.setMake("Toyota");
-        invalidRequest.setModel("Camry");
-        invalidRequest.setYear(1800);  // Too old
-
-        mockMvc.perform(post("/api/vehicles")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidRequest)))
-                .andExpect(status().isBadRequest());
-    }
-
-
-
-    @Test
-    void testGetVehiclesForNonExistentCustomer() throws Exception {
-        mockMvc.perform(get("/api/vehicles/customer/{customerId}", "non-existent-customer"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data", hasSize(0)));
-    }
+        @Test
+        void testGetVehiclesForNonExistentCustomer() throws Exception {
+                mockMvc.perform(get("/api/vehicles/customer/{customerId}", "non-existent-customer"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.success").value(true))
+                                .andExpect(jsonPath("$.data", hasSize(0)));
+        }
 }
