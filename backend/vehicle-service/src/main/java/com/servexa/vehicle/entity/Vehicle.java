@@ -11,45 +11,45 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Vehicle {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @Column(nullable = false, length = 36)
     private String customerId;
-    
+
     @Column(nullable = false, unique = true)
     private String registrationNumber;
-    
+
     @Column(nullable = false)
     private String make;
-    
+
     @Column(nullable = false)
     private String model;
-    
-    @Column(nullable = false)
+
+    @Column(name = "vehicle_year", nullable = false)
     private Integer year;
-    
+
     private String color;
-    
+
     private String vin;
-    
+
     @Column(columnDefinition = "TEXT")
     private String imageUrl;
-    
+
     @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private java.time.LocalDateTime createdAt;
-    
+
     @Column(name = "updated_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private java.time.LocalDateTime updatedAt;
-    
+
     @PrePersist
     protected void onCreate() {
         createdAt = java.time.LocalDateTime.now();
         updatedAt = java.time.LocalDateTime.now();
     }
-    
+
     @PreUpdate
     protected void onUpdate() {
         updatedAt = java.time.LocalDateTime.now();
