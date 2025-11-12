@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { FaUser, FaCar, FaHistory, FaCalendarAlt, FaBell, FaPencilAlt } from 'react-icons/fa';
+import axios from 'axios';
 import { useAuth } from '../../hooks/useAuth';
 import ProfilePictureModal from '../../components/ProfilePictureModal';
 import Sidebar from '../../components/Sidebar';
 import Badge from '../../components/Badge';
 import { useNotificationCount } from '../../hooks/useNotificationCount';
 import { useAppointmentCount } from '../../hooks/useAppointmentCount';
+import authService from '../../services/authService';
 
 const CustomerProfile = () => {
     const { user, logout, updateProfilePicture } = useAuth();
@@ -26,7 +28,7 @@ const CustomerProfile = () => {
     // Debug: Log user data
     console.log('Current user data:', user);
 
-    // Track visited tabs
+    // Track visited tabs and mark as read when visiting
     useEffect(() => {
         const currentTab = location.pathname.split('/').pop();
         const validTabs = ['personal-info', 'my-vehicles', 'service-history', 'appointments', 'notifications'];
@@ -37,8 +39,56 @@ const CustomerProfile = () => {
                 localStorage.setItem('visitedTabs', JSON.stringify([...newSet]));
                 return newSet;
             });
+
+            // If visiting notifications tab, mark all as read after a short delay
+            if (currentTab === 'notifications' && notificationCount > 0) {
+                // Delay to ensure the tab content has loaded
+                setTimeout(() => {
+                    markAllNotificationsAsRead();
+                }, 1000);
+            }
         }
-    }, [location.pathname]);
+    }, [location.pathname, notificationCount]);
+
+    const markAllNotificationsAsRead = async () => {
+        try {
+            const token = authService.getStoredToken();
+            const base = import.meta.env.VITE_NOTIFICATION_API_URL || "http://127.0.0.1:8085";
+            
+            // First fetch all notifications
+            const res = await axios.get(`${base}/api/notifications/me`, {
+                headers: {
+                    Authorization: token ? `Bearer ${token}` : "",
+                },
+            });
+
+            const response = res.data;
+            const notifications = response?.data?.content || response?.data || [];
+            
+            // Mark each unread notification as read
+            const unreadNotifications = (Array.isArray(notifications) ? notifications : [])
+                .filter(n => !n.isRead);
+            
+            if (unreadNotifications.length > 0) {
+                await Promise.all(
+                    unreadNotifications.map(notification =>
+                        axios.put(
+                            `${base}/api/notifications/${notification.id}/mark-read`,
+                            {},
+                            {
+                                headers: { Authorization: token ? `Bearer ${token}` : "" },
+                            }
+                        ).catch(err => console.error('Failed to mark notification as read:', err))
+                    )
+                );
+                
+                // Refresh the notification count
+                refetchNotifications();
+            }
+        } catch (error) {
+            console.error('Failed to mark all notifications as read:', error);
+        }
+    };
 
     const handleLogout = async () => {
         await logout();
