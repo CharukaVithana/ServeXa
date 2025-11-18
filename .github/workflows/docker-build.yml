@@ -209,7 +209,7 @@ jobs:
   security-scan:
     needs: [build-backend, build-frontend]
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     strategy:
       matrix:
         image:
