@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Camera, Edit2, X, Check, Mail, Phone } from "lucide-react";
+import { Camera, Edit2, X, Check } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 
 interface ProfileData {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuth } from "../../hooks/useAuth";
@@ -17,7 +17,6 @@ const Login = () => {
     isSubmitting,
     handleChange,
     handleSubmit,
-    setFieldValue,
   } = useForm<LoginCredentials>({
     initialValues: {
       email: "",

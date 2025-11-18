@@ -1,14 +1,8 @@
 import type { Vehicle } from '../types/auth';
-import { SERVICE_ENDPOINTS, API_PATHS, getApiUrl } from '../config/services';
+import { SERVICE_ENDPOINTS } from '../config/services';
 
 const API_BASE_URL = import.meta.env.VITE_VEHICLE_API_URL || SERVICE_ENDPOINTS.vehicle;
 
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message: string;
-  timestamp?: string;
-}
 
 interface VehicleResponse {
   id: number;

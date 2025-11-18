@@ -27,7 +27,7 @@ const CurrentTasks: React.FC = () => {
 
   const handleCompleteTask = async (task: Task) => {
     try {
-      await employeeService.completeTask(task.id, 0);
+      await employeeService.completeTask(task.id);
       await fetchOngoingTasks();
     } catch (error) {
       console.error("Error completing task:", error);

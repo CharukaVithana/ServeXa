@@ -1,5 +1,5 @@
 import type { LoginCredentials, SignupData, AuthResponse, ResetPasswordData, User } from '../types/auth';
-import { SERVICE_ENDPOINTS, API_PATHS, getApiUrl } from '../config/services';
+import { SERVICE_ENDPOINTS } from '../config/services';
 
 // For backward compatibility, check if VITE_API_URL is set
 const API_BASE_URL = import.meta.env.VITE_API_URL || `${SERVICE_ENDPOINTS.auth}/api`;
@@ -238,13 +238,6 @@ class AuthService {
   }
 }
 
-function getAuthHeaders() {
-  const token = localStorage.getItem('authToken');
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
 
 
 export default new AuthService();

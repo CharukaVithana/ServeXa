@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuth } from "../../hooks/useAuth";
 import { useForm } from "../../hooks/useForm";
 import { authValidation, validateForm } from "../../utils/validation";
 import type { SignupData } from "../../types/auth";
-import authService from "../../services/authService";
 import PasswordStrengthIndicator from "../../components/PasswordStrengthIndicator";
 
 interface SignupFormData extends SignupData {
@@ -24,7 +23,6 @@ const Signup = () => {
     isSubmitting,
     handleChange,
     handleSubmit,
-    setErrors,
   } = useForm<SignupFormData>({
     initialValues: {
       fullName: "",
@@ -57,17 +55,6 @@ const Signup = () => {
     },
   });
 
-  const handleSocialSignup = async (provider: 'google' | 'facebook') => {
-    try {
-      if (provider === 'google') {
-        await authService.loginWithGoogle();
-      } else {
-        await authService.loginWithFacebook();
-      }
-    } catch (error) {
-      setServerError(`Failed to sign up with ${provider}`);
-    }
-  };
 
   return (
     <div className="flex min-h-screen">

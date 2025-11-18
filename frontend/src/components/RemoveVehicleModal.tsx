@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaTimes, FaExclamationTriangle } from 'react-icons/fa';
+import { FaExclamationTriangle } from 'react-icons/fa';
 import type { Vehicle } from '../types/auth';
 
 interface RemoveVehicleModalProps {

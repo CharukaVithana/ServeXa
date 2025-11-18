@@ -74,7 +74,7 @@ export function useForm<T extends Record<string, any>>({
     }
   }, [values, validate, onSubmit]);
 
-  const resetForm = useCallback((newValues?: T) => {
+  const resetForm = useCallback(() => {
     setValues(initialValues);
     setErrors({});
     setIsSubmitting(false);

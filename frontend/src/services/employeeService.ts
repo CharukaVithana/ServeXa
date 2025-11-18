@@ -75,7 +75,6 @@ interface AppointmentResponse {
 
 // Map appointment to task
 const mapAppointmentToTask = (appointment: AppointmentResponse): Task => {
-  const bookingDate = new Date(appointment.bookingDateTime);
 
   return {
     id: appointment.id,
@@ -306,7 +305,7 @@ class EmployeeService {
   }
 
   // Complete a task
-  async completeTask(taskId: string, duration: number): Promise<Task> {
+  async completeTask(taskId: string): Promise<Task> {
     try {
       const response = await axios.put(
         `${API_URL}/api/appointments/${taskId}/status?status=COMPLETED`,

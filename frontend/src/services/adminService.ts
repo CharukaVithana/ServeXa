@@ -97,5 +97,4 @@ const adminService = {
   }
 };
 
-export type { PendingUser, PaginatedResponse, PendingTask };
 export { adminService };

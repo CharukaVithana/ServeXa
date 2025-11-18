@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FaCheckCircle, FaEye } from 'react-icons/fa';
 import appointmentService from '../../services/appointmentService';
 import authService from '../../services/authService';

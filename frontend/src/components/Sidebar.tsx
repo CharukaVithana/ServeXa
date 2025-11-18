@@ -6,9 +6,7 @@ import {
   User,
   Settings,
   LogOut,
-  Users,
   ClipboardList,
-  BarChart,
   Wrench,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";

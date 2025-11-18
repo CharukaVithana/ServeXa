@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { NavLink, Outlet,  useLocation } from 'react-router-dom';
 import { FaUser, FaCar, FaHistory, FaCalendarAlt, FaBell, FaPencilAlt } from 'react-icons/fa';
 import axios from 'axios';
 import { useAuth } from '../../hooks/useAuth';
@@ -11,8 +11,7 @@ import { useAppointmentCount } from '../../hooks/useAppointmentCount';
 import authService from '../../services/authService';
 
 const CustomerProfile = () => {
-    const { user, logout, updateProfilePicture } = useAuth();
-    const navigate = useNavigate();
+    const { user,  updateProfilePicture } = useAuth();
     const location = useLocation();
     const [isPictureModalOpen, setPictureModalOpen] = useState(false);
     
@@ -23,7 +22,7 @@ const CustomerProfile = () => {
     });
     
     const { unreadCount: notificationCount, refetch: refetchNotifications } = useNotificationCount();
-    const { counts: appointmentCounts, refetch: refetchAppointments } = useAppointmentCount();
+    const { counts: appointmentCounts } = useAppointmentCount();
     
     // Debug: Log user data
     console.log('Current user data:', user);
@@ -90,10 +89,6 @@ const CustomerProfile = () => {
         }
     };
 
-    const handleLogout = async () => {
-        await logout();
-        navigate('/login');
-    };
 
     const navItems = [
         { to: 'personal-info', icon: <FaUser />, label: 'Personal Info' },

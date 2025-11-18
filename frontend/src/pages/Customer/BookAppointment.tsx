@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FaUser, FaPhone, FaCalendarAlt, FaCar, FaClock, FaPlus } from 'react-icons/fa';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
@@ -7,7 +7,6 @@ import Sidebar from '../../components/Sidebar';
 import appointmentService from '../../services/appointmentService';
 import { toast } from 'react-hot-toast';
 import AddVehicleModal from '../../components/AddVehicleModal';
-import type { Vehicle } from '../../types/auth';
 
 interface BookingFormData {
     fullName: string;
@@ -231,7 +230,7 @@ const BookAppointment = () => {
                 paymentMethod: formData.paymentMethod
             };
             
-            const response = await appointmentService.createAppointment(appointmentData);
+            await appointmentService.createAppointment(appointmentData);
             
             toast.success('Appointment booked successfully!');
             
@@ -587,8 +586,8 @@ const BookAppointment = () => {
                         setIsAddVehicleModalOpen(false);
                         toast.success('Vehicle added successfully! You can now select it.');
                         // Auto-select the newly added vehicle if it's the first one
-                        if (vehicles.length === 0 && user?.vehicles?.[0]) {
-                            setFormData(prev => ({ ...prev, vehicleId: user.vehicles[0].id }));
+                        if (vehicles.length === 0 && user?.vehicles && user.vehicles[0]) {
+                            setFormData(prev => ({ ...prev, vehicleId: user.vehicles![0].id }));
                         }
                     } catch (error) {
                         console.error('Error adding vehicle:', error);

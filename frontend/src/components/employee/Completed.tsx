@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { CheckCircle, Clock, Search } from "lucide-react";
+import { CheckCircle, Clock } from "lucide-react";
 import employeeService from "../../services/employeeService";
 import type { Task } from "../../services/employeeService";
 

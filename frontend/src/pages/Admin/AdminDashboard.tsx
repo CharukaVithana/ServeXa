@@ -31,7 +31,7 @@ interface DashboardStats {
 }
 
 const AdminDashboard: React.FC = () => {
-  const { user, logout, updateProfilePicture } = useAuth();
+  const { user, updateProfilePicture } = useAuth();
   const navigate = useNavigate();
   const [isPictureModalOpen, setPictureModalOpen] = useState(false);
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
@@ -96,10 +96,7 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate("/login");
-  };
+
 
   const getAvatarUrl = () => {
     if (user?.profilePictureUrl) return user.profilePictureUrl;
@@ -378,7 +375,9 @@ const AdminDashboard: React.FC = () => {
       <ProfilePictureModal
         isOpen={isPictureModalOpen}
         onClose={() => setPictureModalOpen(false)}
-        onSave={updateProfilePicture}
+        onSave={async (imageUrl) => {
+          await updateProfilePicture(imageUrl);
+        }}
         currentImageUrl={user?.profilePictureUrl}
       />
     </div>

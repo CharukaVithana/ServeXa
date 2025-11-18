@@ -5,8 +5,6 @@ import {
   Clock,
   User,
   Car,
-  CheckCircle,
-  XCircle,
   AlertCircle,
   Filter,
   Search,
@@ -84,7 +82,7 @@ const AdminAppointments: React.FC = () => {
           );
         }
         
-        setAppointments(filteredAppointments);
+        setAppointments(filteredAppointments as any);
         setTotalPages(response.totalPages || 0);
       } catch (error) {
         console.error('Failed to fetch appointments:', error);
@@ -92,7 +90,7 @@ const AdminAppointments: React.FC = () => {
         const mockAppointments: Appointment[] = [
           {
             id: '1',
-            customerId: 1,
+            customerId: "1" as any,
             fullName: 'John Doe',
             phoneNumber: '+1234567890',
             vehicleType: 'Toyota Camry 2020',
@@ -106,7 +104,7 @@ const AdminAppointments: React.FC = () => {
           },
           {
             id: '2',
-            customerId: 2,
+            customerId: "2" as any,
             fullName: 'Jane Smith',
             phoneNumber: '+1234567891',
             vehicleType: 'Honda Civic 2019',
@@ -144,24 +142,6 @@ const AdminAppointments: React.FC = () => {
     }
   };
 
-  const handleStatusChange = async (appointmentId: string, newStatus: string) => {
-    try {
-      await appointmentService.updateAppointmentStatus(appointmentId, newStatus);
-      
-      // Update local state
-      setAppointments(prev =>
-        prev.map(apt =>
-          apt.id === appointmentId ? { ...apt, status: newStatus } : apt
-        )
-      );
-      
-      // Optionally refresh data
-      fetchAppointments();
-    } catch (err: any) {
-      console.error('Error updating appointment:', err);
-      setError('Failed to update appointment status');
-    }
-  };
 
   const handleAssignEmployee = async (appointmentId: string, employeeId: string) => {
     if (!employeeId) return;

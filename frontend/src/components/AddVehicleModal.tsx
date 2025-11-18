@@ -38,8 +38,7 @@ const AddVehicleModal: React.FC<AddVehicleModalProps> = ({ isOpen, onClose, onSa
     isSubmitting,
     handleChange,
     handleSubmit,
-    resetForm,
-    setFieldValue
+    resetForm
   } = useForm<Omit<Vehicle, 'id'>>({
     initialValues: {
       registrationNumber: '',

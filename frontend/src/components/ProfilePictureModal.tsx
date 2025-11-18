@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef } from 'react';
 import { FaTimes, FaUpload, FaTrash } from 'react-icons/fa';
 
 interface ProfilePictureModalProps {
