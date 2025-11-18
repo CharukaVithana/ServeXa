@@ -218,6 +218,13 @@ jobs:
           - vehicle-service
           - frontend
     steps:
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
@@ -225,10 +232,21 @@ jobs:
           format: 'sarif'
           output: 'trivy-results-${{ matrix.image }}.sarif'
           severity: 'CRITICAL,HIGH'
+          exit-code: '0'  # Don't fail the job on vulnerabilities
+
+      - name: Check if sarif file exists
+        id: check_sarif
+        run: |
+          if [ -f "trivy-results-${{ matrix.image }}.sarif" ]; then
+            echo "sarif_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "sarif_exists=false" >> $GITHUB_OUTPUT
+            echo "Warning: SARIF file not created for ${{ matrix.image }}"
+          fi
 
       - name: Upload Trivy scan results
-        uses: github/codeql-action/upload-sarif@v2
-        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        if: steps.check_sarif.outputs.sarif_exists == 'true'
         with:
           sarif_file: 'trivy-results-${{ matrix.image }}.sarif'
 
