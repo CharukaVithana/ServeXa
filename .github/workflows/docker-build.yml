@@ -32,6 +32,9 @@ jobs:
           - name: vehicle-service
             context: ./backend/vehicle-service
             port: 8084
+          - name: chatbot-service
+            context: ./backend/chatbot-service
+            port: 8086
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -59,12 +62,17 @@ jobs:
       - name: Build ${{ matrix.service.name }}
         run: |
           cd backend
-          # Map service names to actual module names
-          MODULE_NAME="${{ matrix.service.name }}"
-          if [ "$MODULE_NAME" = "auth-service" ]; then
-            MODULE_NAME="authentication-service"
+          # Skip Maven build for Python services
+          if [ "${{ matrix.service.name }}" = "chatbot-service" ]; then
+            echo "Skipping Maven build for Python-based chatbot-service"
+          else
+            # Map service names to actual module names
+            MODULE_NAME="${{ matrix.service.name }}"
+            if [ "$MODULE_NAME" = "auth-service" ]; then
+              MODULE_NAME="authentication-service"
+            fi
+            mvn clean package -pl $MODULE_NAME -am -DskipTests
           fi
-          mvn clean package -pl $MODULE_NAME -am -DskipTests
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -136,6 +144,7 @@ jobs:
           VITE_AUTH_SERVICE_URL: ${{ vars.VITE_AUTH_SERVICE_URL || 'http://localhost:8081' }}
           VITE_APPOINTMENT_SERVICE_URL: ${{ vars.VITE_APPOINTMENT_SERVICE_URL || 'http://localhost:8083' }}
           VITE_VEHICLE_SERVICE_URL: ${{ vars.VITE_VEHICLE_SERVICE_URL || 'http://localhost:8084' }}
+          VITE_CHATBOT_SERVICE_URL: ${{ vars.VITE_CHATBOT_SERVICE_URL || 'http://localhost:8086' }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -216,6 +225,7 @@ jobs:
           - auth-service
           - appointment-service
           - vehicle-service
+          - chatbot-service
           - frontend
     steps:
       - name: Log in to Container Registry
@@ -300,4 +310,5 @@ jobs:
           echo "- ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-auth-service:latest"
           echo "- ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-appointment-service:latest"
           echo "- ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-vehicle-service:latest"
+          echo "- ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-chatbot-service:latest"
           echo "- ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:latest"

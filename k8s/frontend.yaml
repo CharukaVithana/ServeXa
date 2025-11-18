@@ -9,6 +9,7 @@ data:
   VITE_AUTH_SERVICE_URL: "http://auth-service:8081"
   VITE_APPOINTMENT_SERVICE_URL: "http://appointment-service:8083"
   VITE_VEHICLE_SERVICE_URL: "http://vehicle-service:8084"
+  VITE_CHATBOT_SERVICE_URL: "http://chatbot-service:8086"
 ---
 # Frontend Deployment
 apiVersion: apps/v1

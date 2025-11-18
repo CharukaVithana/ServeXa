@@ -161,3 +161,114 @@ spec:
       protocol: TCP
   selector:
     app: vehicle-service
+---
+# Chatbot Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatbot-service
+  namespace: servexa
+  labels:
+    app: chatbot-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chatbot-service
+  template:
+    metadata:
+      labels:
+        app: chatbot-service
+    spec:
+      containers:
+        - name: chatbot-service
+          image: servexa/chatbot-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8086
+          env:
+            - name: NOTIFICATION_SERVICE_URL
+              value: "http://notification-service:8085"
+            - name: APPOINTMENT_SERVICE_URL
+              value: "http://appointment-service:8083"
+            - name: AUTH_SERVICE_URL
+              value: "http://auth-service:8081"
+            - name: VEHICLE_SERVICE_URL
+              value: "http://vehicle-service:8084"
+          volumeMounts:
+            - name: servexa-pdf
+              mountPath: /app/ServeXa.pdf
+              subPath: ServeXa.pdf
+            - name: chroma-storage
+              mountPath: /app/chroma_db
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8086
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8086
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: servexa-pdf
+          configMap:
+            name: chatbot-config
+            items:
+              - key: ServeXa.pdf
+                path: ServeXa.pdf
+        - name: chroma-storage
+          persistentVolumeClaim:
+            claimName: chatbot-chroma-pvc
+---
+# Chatbot Service Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: chatbot-service
+  namespace: servexa
+  labels:
+    app: chatbot-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8086
+      targetPort: 8086
+      protocol: TCP
+  selector:
+    app: chatbot-service
+---
+# Chatbot Service PVC for ChromaDB
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: chatbot-chroma-pvc
+  namespace: servexa
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: standard
+---
+# Chatbot Service ConfigMap (placeholder for PDF)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chatbot-config
+  namespace: servexa
+data:
+  ServeXa.pdf: |
+    # This is a placeholder. The actual PDF content should be added here
+    # or mounted from a different source in production
