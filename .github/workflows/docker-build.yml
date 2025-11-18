@@ -59,7 +59,12 @@ jobs:
       - name: Build ${{ matrix.service.name }}
         run: |
           cd backend
-          mvn clean package -pl ${{ matrix.service.name }} -am -DskipTests
+          # Map service names to actual module names
+          MODULE_NAME="${{ matrix.service.name }}"
+          if [ "$MODULE_NAME" = "auth-service" ]; then
+            MODULE_NAME="authentication-service"
+          fi
+          mvn clean package -pl $MODULE_NAME -am -DskipTests
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
