@@ -51,15 +51,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Build common-libs
+      - name: Build parent POM and common-libs
         run: |
-          cd backend/common-libs
-          mvn clean install
+          cd backend
+          mvn clean install -pl common-libs -am
 
       - name: Build ${{ matrix.service.name }}
         run: |
-          cd ${{ matrix.service.context }}
-          mvn clean package -DskipTests
+          cd backend
+          mvn clean package -pl ${{ matrix.service.name }} -am -DskipTests
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
