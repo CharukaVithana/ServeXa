@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import type { KeyboardEvent } from "react";
 import { MessageCircle, X, Send } from "lucide-react";
-import chatbotIcon from "../assets/chatbotIcon.png";
+import chatbotIcon from "../assets/ChatbotIcon.png";
 import { useAuth } from "../hooks/useAuth";
 import ReactMarkdown from "react-markdown";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 
 interface Message {
   sender: "user" | "bot";
@@ -54,7 +54,10 @@ const Chatbot: React.FC = () => {
     if (!customerId && /my|me|my name|my car|my email/i.test(userMessage)) {
       setMessages((prev) => [
         ...prev,
-        { sender: "bot", text: "⚠️ Please log in to access your personal information." },
+        {
+          sender: "bot",
+          text: "⚠️ Please log in to access your personal information.",
+        },
       ]);
       return;
     }
@@ -65,7 +68,8 @@ const Chatbot: React.FC = () => {
 
     try {
       // Get auth token from localStorage - check both possible keys
-      const token = localStorage.getItem("authToken") || localStorage.getItem("token");
+      const token =
+        localStorage.getItem("authToken") || localStorage.getItem("token");
       const headers: HeadersInit = { "Content-Type": "application/json" };
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
@@ -77,7 +81,10 @@ const Chatbot: React.FC = () => {
       const res = await fetch(`${CHATBOT_API_URL}/api/chat`, {
         method: "POST",
         headers,
-        body: JSON.stringify({ question: userMessage, customer_id: customerId }),
+        body: JSON.stringify({
+          question: userMessage,
+          customer_id: customerId,
+        }),
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -85,7 +92,10 @@ const Chatbot: React.FC = () => {
 
       setMessages((prev) => [
         ...prev,
-        { sender: "bot", text: data.answer || "Sorry, I couldn’t understand that." },
+        {
+          sender: "bot",
+          text: data.answer || "Sorry, I couldn’t understand that.",
+        },
       ]);
     } catch {
       setMessages((prev) => [
@@ -126,7 +136,10 @@ const Chatbot: React.FC = () => {
                 <p className="text-xs text-gray-100">Always here to help 🚗</p>
               </div>
             </div>
-            <button onClick={() => setIsOpen(false)} className="hover:text-gray-300 transition-transform transform hover:scale-110">
+            <button
+              onClick={() => setIsOpen(false)}
+              className="hover:text-gray-300 transition-transform transform hover:scale-110"
+            >
               <X size={20} />
             </button>
           </div>
@@ -167,7 +180,9 @@ const Chatbot: React.FC = () => {
                           </a>
                         ),
                         p: ({ children }) => <p className="mb-2">{children}</p>,
-                        strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                        strong: ({ children }) => (
+                          <strong className="font-semibold">{children}</strong>
+                        ),
                       }}
                     >
                       {msg.text}

@@ -1,0 +1,188 @@
+# GKE-specific Ingress with Google Cloud Load Balancer
+# This uses GCE ingress controller (default in GKE)
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: servexa-ingress
+  namespace: servexa
+  annotations:
+    # Use Google Cloud Load Balancer
+    kubernetes.io/ingress.class: "gce"
+    # Enable HTTP to HTTPS redirect (if using SSL)
+    # ingress.gcp.kubernetes.io/pre-shared-cert: "servexa-ssl-cert"
+    # Optional: Static IP (create with: gcloud compute addresses create servexa-ip --global)
+    # kubernetes.io/ingress.global-static-ip-name: "servexa-ip"
+  labels:
+    app: servexa
+spec:
+  rules:
+  - http:
+      paths:
+      # Frontend
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 80
+      
+      # Auth Service API
+      - path: /api/auth
+        pathType: Prefix
+        backend:
+          service:
+            name: auth-service
+            port:
+              number: 8081
+      
+      # Appointment Service API
+      - path: /api/appointments
+        pathType: Prefix
+        backend:
+          service:
+            name: appointment-service
+            port:
+              number: 8083
+      
+      # Vehicle Service API
+      - path: /api/vehicles
+        pathType: Prefix
+        backend:
+          service:
+            name: vehicle-service
+            port:
+              number: 8084
+      
+      # Notification Service API
+      - path: /api/notifications
+        pathType: Prefix
+        backend:
+          service:
+            name: notification-service
+            port:
+              number: 8085
+      
+      # Chatbot Service API
+      - path: /api/chatbot
+        pathType: Prefix
+        backend:
+          service:
+            name: chatbot-service
+            port:
+              number: 8086
+
+---
+# Horizontal Pod Autoscaler for Auth Service
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: auth-service-hpa
+  namespace: servexa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: auth-service
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+# Horizontal Pod Autoscaler for Frontend
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend-hpa
+  namespace: servexa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+
+---
+# Horizontal Pod Autoscaler for Backend Services
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: appointment-service-hpa
+  namespace: servexa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: appointment-service
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: vehicle-service-hpa
+  namespace: servexa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: vehicle-service
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: notification-service-hpa
+  namespace: servexa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: notification-service
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70

@@ -203,15 +203,15 @@ services:
       - "8086:8086"
     depends_on:
       auth-service:
-        condition: service_healthy
+        condition: service_started
       appointment-service:
-        condition: service_healthy
+        condition: service_started
       vehicle-service:
-        condition: service_healthy
+        condition: service_started
       notification-service:
-        condition: service_healthy
+        condition: service_started
       chroma:
-        condition: service_healthy
+        condition: service_started
     networks:
       - servexa-network
     environment:
@@ -249,13 +249,13 @@ services:
       - "3000:80"
     depends_on:
       auth-service:
-        condition: service_healthy
+        condition: service_started
       appointment-service:
-        condition: service_healthy
+        condition: service_started
       vehicle-service:
-        condition: service_healthy
+        condition: service_started
       notification-service:
-        condition: service_healthy
+        condition: service_started
     networks:
       - servexa-network
     environment:
