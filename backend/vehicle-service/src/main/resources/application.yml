@@ -1,13 +1,13 @@
 spring:
   application:
     name: vehicle-service
-  
+
   datasource:
     url: jdbc:postgresql://localhost:5432/servexa_vehicle_db
     username: postgres
     password: password
     driver-class-name: org.postgresql.Driver
-  
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -16,7 +16,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-  
+
   profiles:
     active: local
 
@@ -24,6 +24,15 @@ server:
   port: 8084
   servlet:
     context-path: /
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
 
 logging:
   level:
