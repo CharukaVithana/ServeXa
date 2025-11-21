@@ -16,7 +16,7 @@ from urllib.parse import urlparse
 from service_clients import service_clients
 import logging
 
-# ------------------ Load environment variables ------------------
+
 load_dotenv()
 
 # Setup logging
@@ -62,7 +62,7 @@ if chroma_client.get_or_create_collection(collection_name).count() == 0:
     print("Vector store is empty. Loading 'ServeXa.pdf'...")
     try:
         # Get the directory where this script is located
-        script_dir = os.path.dirname(os.path.abspath(__file__))
+        script_dir = os.path.dirname(os.path.abspath(_file_))
         pdf_path = os.path.join(script_dir, "ServeXa.pdf")
         
         if not os.path.exists(pdf_path):
@@ -225,11 +225,11 @@ def format_appointments_response(question: str, appointments: list) -> str:
     completed = [a for a in sorted_appointments if a.get('status') == 'COMPLETED']
     cancelled = [a for a in sorted_appointments if a.get('status') == 'CANCELLED']
     
-    response_lines = [f"You have **{total}** total appointments:"]
+    response_lines = [f"You have *{total}* total appointments:"]
     
     # Show scheduled appointments first
     if scheduled:
-        response_lines.append(f"\n**Upcoming ({len(scheduled)}):** [View All Appointments →](/customer/profile/appointments)")
+        response_lines.append(f"\n*Upcoming ({len(scheduled)}):* [View All Appointments →](/profile/appointments)")
         for i, apt in enumerate(scheduled[:5], 1):  # Show first 5
             # Parse bookingDateTime to format date and time nicely
             booking_dt = apt.get('bookingDateTime', '')
@@ -255,7 +255,7 @@ def format_appointments_response(question: str, appointments: list) -> str:
     
     # Show completed appointments
     if completed and len(response_lines) < 10:  # Limit total response length
-        response_lines.append(f"\n**Completed ({len(completed)}):** [View Service History →](/customer/profile/service-history)")
+        response_lines.append(f"\n*Completed ({len(completed)}):* [View Service History →](/profile/service-history)")
         for i, apt in enumerate(completed[:3], 1):  # Show first 3
             # Parse bookingDateTime to format date and time nicely
             booking_dt = apt.get('bookingDateTime', '')
@@ -279,11 +279,11 @@ def format_appointments_response(question: str, appointments: list) -> str:
     
     # Show cancelled count if any
     if cancelled:
-        response_lines.append(f"\n**Cancelled: {len(cancelled)}**")
+        response_lines.append(f"\n*Cancelled: {len(cancelled)}*")
     
     # Add helpful links at the bottom
     response_lines.append("\n---")
-    response_lines.append("[Book New Appointment](/cus-dashboard/appointments) | [View All Appointments](/customer/profile/appointments) | [Service History](/customer/profile/service-history)")
+    response_lines.append("[Book New Appointment](/cus-dashboard/appointments) | [View All Appointments](/profile/appointments) | [Service History](/profile/service-history)")
     
     return "\n".join(response_lines)
 
@@ -375,9 +375,9 @@ async def classify_and_route_async(question: str, customer_id: str = None, token
         return "Please log in to view your personal appointments, vehicles, or service status."
     
     system_prompt = """
-You are a routing assistant. Call *one* of these:
-- `query_rag_system` for ServeXa/general knowledge/policies
-- `query_service_system` for garage/customer/vehicle/appointment/notification info
+You are a routing assistant. Call one of these:
+- query_rag_system for ServeXa/general knowledge/policies
+- query_service_system for garage/customer/vehicle/appointment/notification info
 """
     messages = [
         {"role": "system", "content": system_prompt},

@@ -28,7 +28,7 @@ public class Vehicle {
     @Column(nullable = false)
     private String model;
 
-    @Column(name = "vehicle_year", nullable = false)
+    @Column(name = "\"year\"", nullable = false)
     private Integer year;
 
     private String color;
